@@ -4,7 +4,7 @@ namespace model {
 
 Obstacle::Obstacle(int id, model::Vec2 position, double radius, bool canSeeThrough, bool canShootThrough) : id(id), position(position), radius(radius), canSeeThrough(canSeeThrough), canShootThrough(canShootThrough) { }
 
-// Read Obstacle from input stream
+// Read Constants from input stream
 Obstacle Obstacle::readFrom(InputStream& stream) {
     int id = stream.readInt();
     model::Vec2 position = model::Vec2::readFrom(stream);
@@ -14,7 +14,7 @@ Obstacle Obstacle::readFrom(InputStream& stream) {
     return Obstacle(id, position, radius, canSeeThrough, canShootThrough);
 }
 
-// Write Obstacle to output stream
+// Write Constants to output stream
 void Obstacle::writeTo(OutputStream& stream) const {
     stream.write(id);
     position.writeTo(stream);
@@ -23,10 +23,10 @@ void Obstacle::writeTo(OutputStream& stream) const {
     stream.write(canShootThrough);
 }
 
-// Get string representation of Obstacle
+// Get string representation of Constants
 std::string Obstacle::toString() const {
     std::stringstream ss;
-    ss << "Obstacle { ";
+    ss << "Constants { ";
     ss << "id: ";
     ss << id;
     ss << ", ";

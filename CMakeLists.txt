@@ -39,7 +39,7 @@ set(HEADERS
     "model/Vec2.hpp"
     "model/WeaponProperties.hpp"
     "model/Zone.hpp"
-)
+        )
 set (SRC
     "DebugInterface.cpp"
     "MyStrategy.cpp"
@@ -53,7 +53,6 @@ set (SRC
     "debugging/DebugCommand.cpp"
     "debugging/DebugData.cpp"
     "debugging/DebugState.cpp"
-    "main.cpp"
     "model/Action.cpp"
     "model/ActionOrder.cpp"
     "model/ActionType.cpp"
@@ -75,5 +74,7 @@ set (SRC
 )
 SET_SOURCE_FILES_PROPERTIES(${HEADERS} PROPERTIES HEADER_FILE_ONLY TRUE)
 include_directories(".")
-add_executable(ai_cup_22 ${HEADERS} ${SRC})
+add_executable(ai_cup_22 ${HEADERS} ${SRC} main.cpp emulator/Vector2D.cpp emulator/Vector2D.h emulator/World.cpp emulator/World.h emulator/Constants.cpp emulator/Constants.h)
 TARGET_LINK_LIBRARIES(ai_cup_22 ${PROJECT_LIBS})
+
+add_executable(test ${SRC} emulator/Vector2D.cpp emulator/Vector2D.h emulator/World.cpp emulator/World.h emulator/Constants.cpp emulator/Constants.h testbin/main.cpp)

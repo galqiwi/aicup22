@@ -16,7 +16,7 @@ public:
     int id;
     // Center position
     model::Vec2 position;
-    // Obstacle's radius
+    // Constants's radius
     double radius;
     // Whether units can see through this obstacle, or it blocks the view
     bool canSeeThrough;
@@ -25,13 +25,13 @@ public:
 
     Obstacle(int id, model::Vec2 position, double radius, bool canSeeThrough, bool canShootThrough);
 
-    // Read Obstacle from input stream
+    // Read Constants from input stream
     static Obstacle readFrom(InputStream& stream);
 
-    // Write Obstacle to output stream
+    // Write Constants to output stream
     void writeTo(OutputStream& stream) const;
 
-    // Get string representation of Obstacle
+    // Get string representation of Constants
     std::string toString() const;
 };
 
