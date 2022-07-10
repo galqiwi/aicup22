@@ -12,9 +12,6 @@ MyStrategy::MyStrategy(const model::Constants& constants) {
 
 model::Order MyStrategy::getOrder(const model::Game& game, DebugInterface* debugInterface)
 {
-//    Emulator::TWorld world = Emulator::TWorld::FormApi(game);
-//    world.Dump("world_seed_2.bin");
-//    abort();
     static std::ofstream fout("ai_cup_22.output");
 
     std::unordered_map<int, model::UnitOrder> actions;
@@ -23,19 +20,13 @@ model::Order MyStrategy::getOrder(const model::Game& game, DebugInterface* debug
         if (unit.playerId != game.myId)
             continue;
 
-        if (game.currentTick == 1000) {
-            abort();
-        }
-
-        fout << Emulator::Vector2D::FromApi(unit.position) << std::endl;
-
         std::shared_ptr<model::ActionOrder::Aim> aim = std::make_shared<model::ActionOrder::Aim>(false);
         std::optional<std::shared_ptr<model::ActionOrder>> action = std::make_optional(aim);
 
         model::UnitOrder order({-Emulator::GetGlobalConstants()->maxUnitForwardSpeed, 0}, {unit.direction.x, unit.direction.y}, std::nullopt);
         actions.insert({unit.id, order});
     }
-    return model::Order(actions);
+    return {actions};
 }
 
 void MyStrategy::debugUpdate(DebugInterface& debugInterface) {}
