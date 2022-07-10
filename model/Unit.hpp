@@ -26,7 +26,7 @@ public:
     double shield;
     // Left extra lives of this unit
     int extraLives;
-    // Current position of unit's center
+    // Current position of unit's Center
     model::Vec2 position;
     // Remaining time until unit will be spawned, or None
     std::optional<double> remainingSpawnTime;

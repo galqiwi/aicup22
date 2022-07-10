@@ -25,7 +25,7 @@ void Camera::writeTo(OutputStream& stream) const {
 std::string Camera::toString() const {
     std::stringstream ss;
     ss << "Camera { ";
-    ss << "center: ";
+    ss << "Center: ";
     ss << center.toString();
     ss << ", ";
     ss << "rotation: ";

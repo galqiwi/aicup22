@@ -10,7 +10,7 @@
 namespace Emulator {
 
 struct TObstacle {
-    Vector2D center;
+    Vector2D Center;
     double Radius;
 };
 
@@ -93,5 +93,9 @@ using TConstantsPtr = TConstants*;
 
 TConstantsPtr GetGlobalConstants();
 void SetGlobalConstants(TConstants obstacles);
+
+std::ostream& operator<<(std::ostream& out, const TConstants& c);
+
+std::istream& operator>>(std::istream& in, TConstants& c);
 
 }

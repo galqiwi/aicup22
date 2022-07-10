@@ -62,7 +62,7 @@ public:
     model::Vec2 position;
     // Text
     std::string text;
-    // Alignment, separate for x and y. From 0 to 1. 0.5 - center alignment
+    // Alignment, separate for x and y. From 0 to 1. 0.5 - Center alignment
     model::Vec2 alignment;
     // Size
     double size;
@@ -86,7 +86,7 @@ class DebugData::Circle : public DebugData {
 public:
     static const int TAG = 1;
 
-    // Position of the center
+    // Position of the Center
     model::Vec2 position;
     // Radius
     double radius;
@@ -110,11 +110,11 @@ class DebugData::GradientCircle : public DebugData {
 public:
     static const int TAG = 2;
 
-    // Position of the center
+    // Position of the Center
     model::Vec2 position;
     // Radius
     double radius;
-    // Color of the center
+    // Color of the Center
     debugging::Color innerColor;
     // Color of the edge
     debugging::Color outerColor;
@@ -136,7 +136,7 @@ class DebugData::Ring : public DebugData {
 public:
     static const int TAG = 3;
 
-    // Position of the center
+    // Position of the Center
     model::Vec2 position;
     // Radius
     double radius;
@@ -162,7 +162,7 @@ class DebugData::Pie : public DebugData {
 public:
     static const int TAG = 4;
 
-    // Position of the center
+    // Position of the Center
     model::Vec2 position;
     // Radius
     double radius;
@@ -190,7 +190,7 @@ class DebugData::Arc : public DebugData {
 public:
     static const int TAG = 5;
 
-    // Position of the center
+    // Position of the Center
     model::Vec2 position;
     // Radius
     double radius;

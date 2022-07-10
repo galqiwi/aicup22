@@ -12,11 +12,11 @@ namespace model {
 // Current state of the game zone
 class Zone {
 public:
-    // Current center
+    // Current Center
     model::Vec2 currentCenter;
     // Current radius
     double currentRadius;
-    // Next center
+    // Next Center
     model::Vec2 nextCenter;
     // Next radius
     double nextRadius;

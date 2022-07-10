@@ -12,7 +12,8 @@
 namespace Emulator {
 
 struct TUnit {
-    int PlayerID;
+    int Id;
+    int PlayerId;
     Vector2D Position;
     Vector2D Direction;
     Vector2D Velocity;
@@ -30,13 +31,16 @@ public:
 
     void Dump(const char* filename);
     void Load(const char* filename);
-private:
+
+    int MyId;
+    std::unordered_map<int, TUnit> UnitsById;
     void EmulateOrder(const TOrder& order);
 
+private:
     Vector2D ClipVelocity(Vector2D velocity, const TUnit& unit);
     Vector2D ApplyAcceleration(Vector2D velocity, Vector2D targetVelocity);
+    void MoveCollidingUnit(TUnit& unit, Vector2D velocity);
 
-    std::unordered_map<int, TUnit> UnitsById_;
     TConstantsPtr Constants_ = nullptr;
 };
 
