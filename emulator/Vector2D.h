@@ -10,6 +10,10 @@ struct Vector2D {
         return {v.x, v.y};
     }
 
+    inline model::Vec2 ToApi() const {
+        return {x, y};
+    }
+
     double x, y;
 };
 
@@ -48,5 +52,7 @@ inline Vector2D norm(Vector2D a) {
 std::ostream& operator<<(std::ostream& out, const Vector2D& v);
 
 std::istream& operator>>(std::istream& in, Vector2D& v);
+
+Vector2D RandomUniformVector();
 
 }

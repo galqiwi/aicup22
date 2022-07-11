@@ -4,7 +4,7 @@
 #include "emulator/World.h"
 
 int main() {
-    int emulationSteps = 1000;
+    int emulationSteps = 201;
     std::ofstream fout("test.output");
 
     Emulator::TWorld world;
@@ -23,7 +23,8 @@ int main() {
 
         world.EmulateOrder(Emulator::TOrder{
             .UnitId = myUnitId,
-            .TargetVelocity = Emulator::Vector2D{-Emulator::GetGlobalConstants()->maxUnitForwardSpeed, 0},
+            .TargetVelocity = Emulator::Vector2D{-1000, 0},
+            .TargetDirection = Emulator::Vector2D{world.UnitsById[myUnitId].Direction.y, -world.UnitsById[myUnitId].Direction.x},
         });
     }
 }

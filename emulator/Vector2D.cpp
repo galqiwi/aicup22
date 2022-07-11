@@ -12,4 +12,10 @@ std::istream& operator>>(std::istream& in, Vector2D& v) {
     return in;
 }
 
+Vector2D RandomUniformVector() {
+    double fx = (double)rand() / RAND_MAX;
+    double fy = (double)rand() / RAND_MAX;
+    return {2 * fx - 1, 2 * fy - 1};
+}
+
 }

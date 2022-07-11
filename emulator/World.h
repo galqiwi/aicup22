@@ -1,5 +1,6 @@
 #pragma once
 
+#include "public.h"
 #include "Vector2D.h"
 #include "Constants.h"
 
@@ -22,6 +23,7 @@ struct TUnit {
 struct TOrder {
     int UnitId;
     Vector2D TargetVelocity;
+    Vector2D TargetDirection;
 };
 
 class TWorld {
@@ -33,13 +35,16 @@ public:
     void Load(const char* filename);
 
     int MyId;
+    int CurrentTick;
     std::unordered_map<int, TUnit> UnitsById;
     void EmulateOrder(const TOrder& order);
 
+    void Tick();
 private:
     Vector2D ClipVelocity(Vector2D velocity, const TUnit& unit);
     Vector2D ApplyAcceleration(Vector2D velocity, Vector2D targetVelocity);
     void MoveCollidingUnit(TUnit& unit, Vector2D velocity);
+    void RotateUnit(TUnit& unit, Vector2D targetDirection);
 
     TConstantsPtr Constants_ = nullptr;
 };

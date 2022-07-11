@@ -4,8 +4,21 @@
 
 #include "model/Constants.hpp"
 
+#include <unordered_map>
+#include <map>
 #include <vector>
 
+struct hash_pair {
+    size_t operator()(const std::pair<int, int>& p) const
+    {
+        auto a = p.first;
+        auto b = p.second;
+        auto A = (ulong)(a >= 0 ? 2 * (long)a : -2 * (long)a - 1);
+        auto B = (ulong)(b >= 0 ? 2 * (long)b : -2 * (long)b - 1);
+        auto C = (long)((A >= B ? A * A + A + B : A + B * B) / 2);
+        return a < 0 && b < 0 || a >= 0 && b >= 0 ? C : -C - 1;
+    }
+};
 
 namespace Emulator {
 
@@ -14,8 +27,24 @@ struct TObstacle {
     double Radius;
 };
 
+class TObstacleMeta {
+public:
+    TObstacleMeta();
+    explicit TObstacleMeta(const std::vector<TObstacle>& obstacles);
+
+    const std::vector<int>& GetIntersectingIds(Vector2D point);
+
+    bool IsInitialized() const;
+private:
+    bool Initialized_ = false;
+
+    std::unordered_map<std::pair<int, int>, std::vector<int>, hash_pair> Index_;
+    std::vector<int> EmptyList_;
+};
+
 struct TConstants {
     std::vector<TObstacle> obstacles;
+    TObstacleMeta obstaclesMeta;
 
     // Number of ticks per game second
     double ticksPerSecond;

@@ -9,7 +9,8 @@
 class MyStrategy {
 public:
     MyStrategy(const model::Constants& constants);
-    model::Order getOrder(const model::Game& game, DebugInterface* debugInterface);
+    static model::Order getOrder(const model::Game& game, DebugInterface* debugInterface);
+    static model::UnitOrder getUnitOrder(const model::Game& game, DebugInterface* debugInterface, const model::Unit& unit);
     void debugUpdate(DebugInterface& debugInterface);
     void finish();
 };

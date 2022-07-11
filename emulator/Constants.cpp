@@ -192,4 +192,40 @@ std::istream& operator>>(std::istream& in, TConstants& c) {
     return in;
 }
 
+std::pair<int, int> ToCellId(Vector2D position) {
+    return {position.x, position.y};
+}
+
+TObstacleMeta::TObstacleMeta(): Initialized_(false) {
+}
+
+TObstacleMeta::TObstacleMeta(const std::vector<TObstacle> &obstacles): Initialized_(true) {
+    for (int i = 0; i < obstacles.size(); ++i) {
+        auto [xMin, yMin] = ToCellId(
+            obstacles[i].Center - Vector2D{1, 1} * (obstacles[i].Radius + GetGlobalConstants()->unitRadius));
+
+        auto [xMax, yMax] = ToCellId(
+            obstacles[i].Center + Vector2D{1, 1} * (obstacles[i].Radius + GetGlobalConstants()->unitRadius));
+
+        for (int x = xMin; x <= xMax; ++x) {
+            for (int y = yMin; y <= yMax; ++y) {
+                Index_[{x, y}].push_back(i);
+            }
+        }
+    }
+}
+
+bool TObstacleMeta::IsInitialized() const {
+    return Initialized_;
+}
+
+const std::vector<int>& TObstacleMeta::GetIntersectingIds(Vector2D point) {
+    auto it = Index_.find(ToCellId(point));
+    if (it == Index_.end()) {
+        return EmptyList_;
+    }
+
+    return it->second;
+}
+
 }

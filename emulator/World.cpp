@@ -1,8 +1,9 @@
+#include "World.h"
+#include "Strategy.h"
+
 #include <cassert>
 #include <fstream>
 #include <iostream>
-
-#include "World.h"
 
 namespace Emulator {
 
@@ -17,7 +18,12 @@ TWorld TWorld::FormApi(const model::Game& game) {
             .Velocity = Vector2D::FromApi(unit.velocity),
         };
     }
+    output.CurrentTick = game.currentTick;
     output.MyId = game.myId;
+
+    if (!output.Constants_) {
+        output.Constants_ = GetGlobalConstants();
+    }
 
     return output;
 }
@@ -45,6 +51,26 @@ void TWorld::EmulateOrder(const TOrder &order) {
     auto targetVelocity = ClipVelocity(order.TargetVelocity, unit);
     auto velocity = ApplyAcceleration(unit.Velocity, targetVelocity);
     MoveCollidingUnit(unit, velocity);
+
+    RotateUnit(unit, order.TargetDirection);
+}
+
+void TWorld::RotateUnit(TUnit &unit, Vector2D targetDirection) {
+    if (abs2(targetDirection) <= Constants_->unitRadius * Constants_->unitRadius / 4) {
+        return;
+    }
+
+    targetDirection = norm(targetDirection);
+    auto normal_vector = targetDirection - unit.Direction * ((targetDirection * unit.Direction) / abs2(unit.Direction));
+    auto direction = norm(unit.Direction);
+
+    double maxAngle = Constants_->rotationSpeed / 180 * M_PI / Constants_->ticksPerSecond;
+
+    if (normal_vector * targetDirection < sin(maxAngle)) {
+        unit.Direction = targetDirection;
+    } else {
+        unit.Direction = direction * cos(maxAngle) + normal_vector * sin(maxAngle);
+    }
 }
 
 Vector2D TWorld::ClipVelocity(Vector2D velocity, const TUnit &unit) {
@@ -82,7 +108,13 @@ void TWorld::MoveCollidingUnit(TUnit& unit, Vector2D velocity) {
 
     unit.Velocity = velocity;
 
-    for (const auto& obstacle: Constants_->obstacles) {
+    if (!Constants_->obstaclesMeta.IsInitialized()) {
+        Constants_->obstaclesMeta = TObstacleMeta(Constants_->obstacles);
+    }
+
+    for (const auto& obstacleId: Constants_->obstaclesMeta.GetIntersectingIds(unit.Position)) {
+        auto& obstacle = Constants_->obstacles[obstacleId];
+
         if (abs2(obstacle.Center - unit.Position) > (obstacle.Radius + Constants_->unitRadius) * (obstacle.Radius + Constants_->unitRadius)) {
             continue;
         }
@@ -101,7 +133,11 @@ void TWorld::MoveCollidingUnit(TUnit& unit, Vector2D velocity) {
     unit.Position = unit.Position + unit.Velocity / Constants_->ticksPerSecond;
 }
 
-const std::string LOAD_DUMP_VERSION = "5.0";
+void TWorld::Tick() {
+    ++CurrentTick;
+}
+
+const std::string LOAD_DUMP_VERSION = "6.0";
 
 void TWorld::Dump(const char *filename) {
     std::ofstream fout(filename);
@@ -110,6 +146,8 @@ void TWorld::Dump(const char *filename) {
     fout << LOAD_DUMP_VERSION << std::endl;
 
     fout << *GetGlobalConstants() << std::endl;
+
+    fout << CurrentTick << std::endl;
 
     fout << MyId << std::endl;
 
@@ -140,6 +178,8 @@ void TWorld::Load(const char *filename) {
     }
 
     Constants_ = GetGlobalConstants();
+
+    fin >> CurrentTick;
 
     fin >> MyId;
 
