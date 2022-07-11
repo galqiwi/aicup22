@@ -7,6 +7,14 @@
 
 namespace Emulator {
 
+model::UnitOrder TOrder::ToApi() const {
+    if (Shoot) {
+        return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::make_shared<model::ActionOrder::Aim>(true)};
+    } else {
+        return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::nullopt};
+    }
+}
+
 TWorld TWorld::FormApi(const model::Game& game) {
     TWorld output;
     for (const auto& unit: game.units) {

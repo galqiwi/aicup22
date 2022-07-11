@@ -50,10 +50,26 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
     assert(currentActionId != -1);
     auto& action = Actions[currentActionId];
 
+    auto targetDirection = norm(action.Speed);
+    bool shoot = false;
+
+    // TODO: support multiple players
+    if (world.UnitsById.size() > 1) {
+        for (const auto& [_, unit]: world.UnitsById) {
+            if (unit.PlayerId == world.MyId) {
+                continue;
+            }
+            targetDirection = norm(unit.Position - world.UnitsById.find(unitId)->second.Position);
+            shoot = true;
+            break;
+        }
+    }
+
     return {
         .UnitId = unitId,
         .TargetVelocity = action.Speed,
-        .TargetDirection = norm(action.Speed),
+        .TargetDirection = targetDirection,
+        .Shoot = shoot,
     };
 }
 

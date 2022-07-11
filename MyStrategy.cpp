@@ -47,9 +47,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         }
     }
 
-    auto speed = bestStrategy.Actions[0].Speed;
-
-    return {speed.ToApi(), norm(speed).ToApi(), std::nullopt};
+    return bestStrategy.GetOrder(world, unit.id).ToApi();
 }
 
 void MyStrategy::debugUpdate(DebugInterface& debugInterface) {}

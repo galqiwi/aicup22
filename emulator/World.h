@@ -5,6 +5,7 @@
 #include "Constants.h"
 
 #include "model/Game.hpp"
+#include "model/UnitOrder.hpp"
 
 #include <unordered_map>
 #include <vector>
@@ -24,6 +25,9 @@ struct TOrder {
     int UnitId;
     Vector2D TargetVelocity;
     Vector2D TargetDirection;
+    bool Shoot;
+
+    [[nodiscard]] model::UnitOrder ToApi() const;
 };
 
 class TWorld {

@@ -18,7 +18,7 @@ double EvaluateStrategy(const TStrategy &strategy, const TWorld &world, int unit
         line.push_back(unit.Position.ToApi());
     }
     assert(GetGlobalDebugInterface());
-    GetGlobalDebugInterface()->addPolyLine(std::move(line), 0.15, debugging::Color(1, 0, 0, 1));
+//    GetGlobalDebugInterface()->addPolyLine(std::move(line), 0.15, debugging::Color(1, 0, 0, 1));
 
     return -abs2(unit.Position);
 }
