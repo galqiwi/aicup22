@@ -18,6 +18,8 @@ struct TStrategy {
     std::vector<TStrategyAction> Actions;
 
     [[nodiscard]] TOrder GetOrder(const TWorld& world, int unitId) const;
+
+    TStrategy Mutate();
 };
 
 TStrategy GenerateRandomStrategy(int startTick, int actionDuration, int nActions);

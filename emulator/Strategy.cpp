@@ -84,6 +84,14 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
     };
 }
 
+TStrategy TStrategy::Mutate() {
+    int mutationIndex = (int)(rand() % Actions.size());
+    auto output = *this;
+
+    output.Actions[mutationIndex].Speed = output.Actions[mutationIndex].Speed + RandomUniformVector() * GetGlobalConstants()->maxUnitForwardSpeed * 0.2;
+    return output;
+}
+
 void VisualiseStrategy(const TStrategy& strategy, const TWorld &world, int unitId, int untilTick) {
     TWorld currentWorld = world;
     auto& unit = currentWorld.UnitsById[unitId];

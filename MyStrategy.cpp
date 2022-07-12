@@ -32,6 +32,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     int actionDuration = (int)lround(Emulator::GetGlobalConstants()->ticksPerSecond) / 2;
     int nActions = 5;
     int nStrategies = 100;
+    int nMutations = 5;
 
     Emulator::TWorld world = Emulator::TWorld::FormApi(game);
 
@@ -60,6 +61,9 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     auto order = bestStrategy.GetOrder(world, unit.id);
 
     bestStrategies.resize(0);
+    for (int i = 0; i < nMutations; ++i) {
+        bestStrategies.push_back(bestStrategy.Mutate());
+    }
     bestStrategies.push_back(std::move(bestStrategy));
 
     return order.ToApi();
