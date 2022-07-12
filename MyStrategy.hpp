@@ -5,6 +5,7 @@
 #include "model/Game.hpp"
 #include "model/Order.hpp"
 #include "model/Constants.hpp"
+#include "emulator/public.h"
 
 class MyStrategy {
 public:

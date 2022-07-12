@@ -22,4 +22,6 @@ struct TStrategy {
 
 TStrategy GenerateRandomStrategy(int startTick, int actionDuration, int nActions);
 
+void VisualiseStrategy(const TStrategy& strategy, const TWorld &world, int unitId, int untilTick);
+
 }

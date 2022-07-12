@@ -25,6 +25,8 @@ namespace Emulator {
 struct TObstacle {
     Vector2D Center;
     double Radius;
+    bool CanSeeThrough;
+    bool CanShootThrough;
 };
 
 class TObstacleMeta {
@@ -33,11 +35,13 @@ public:
     explicit TObstacleMeta(const std::vector<TObstacle>& obstacles);
 
     const std::vector<int>& GetIntersectingIds(Vector2D point);
+    std::optional<int> GetObstacle(Vector2D point);
 
     bool IsInitialized() const;
 private:
     bool Initialized_ = false;
 
+    std::vector<TObstacle> Obstacles_;
     std::unordered_map<std::pair<int, int>, std::vector<int>, hash_pair> Index_;
     std::vector<int> EmptyList_;
 };
@@ -114,6 +118,8 @@ struct TConstants {
     double shieldPotionUseTime;
     // Distance when steps sound will be 100% probability
     double stepsSoundTravelDistance;
+    // List of properties of every weapon type
+    std::vector<model::WeaponProperties> weapons;
 
     static TConstants FromAPI(const model::Constants& apiConstants);
 };

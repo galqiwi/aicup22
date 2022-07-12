@@ -19,9 +19,11 @@ TConstants TConstants::FromAPI(const model::Constants &apiConstants) {
     obstacles.reserve(apiConstants.obstacles.size());
 
     for (const auto& obstacle: apiConstants.obstacles) {
-        obstacles.push_back(TObstacle{
-            Vector2D{obstacle.position.x, obstacle.position.y},
-            obstacle.radius});
+        obstacles.push_back({
+        .Center = Vector2D{obstacle.position.x, obstacle.position.y},
+        .Radius = obstacle.radius,
+        .CanSeeThrough = obstacle.canSeeThrough,
+        .CanShootThrough = obstacle.canShootThrough});
     }
 
     auto ticksPerSecond = apiConstants.ticksPerSecond;
@@ -58,6 +60,7 @@ TConstants TConstants::FromAPI(const model::Constants &apiConstants) {
     auto shieldPerPotion = apiConstants.shieldPerPotion;
     auto shieldPotionUseTime = apiConstants.shieldPotionUseTime;
     auto stepsSoundTravelDistance = apiConstants.stepsSoundTravelDistance;
+    auto weapons = apiConstants.weapons;
 
     return {
         .obstacles = std::move(obstacles),
@@ -95,6 +98,7 @@ TConstants TConstants::FromAPI(const model::Constants &apiConstants) {
         .shieldPerPotion = shieldPerPotion,
         .shieldPotionUseTime = shieldPotionUseTime,
         .stepsSoundTravelDistance = stepsSoundTravelDistance,
+        .weapons = weapons,
     };
 }
 
@@ -199,7 +203,7 @@ std::pair<int, int> ToCellId(Vector2D position) {
 TObstacleMeta::TObstacleMeta(): Initialized_(false) {
 }
 
-TObstacleMeta::TObstacleMeta(const std::vector<TObstacle> &obstacles): Initialized_(true) {
+TObstacleMeta::TObstacleMeta(const std::vector<TObstacle> &obstacles): Initialized_(true), Obstacles_(obstacles) {
     for (int i = 0; i < obstacles.size(); ++i) {
         auto [xMin, yMin] = ToCellId(
             obstacles[i].Center - Vector2D{1, 1} * (obstacles[i].Radius + GetGlobalConstants()->unitRadius));
@@ -226,6 +230,16 @@ const std::vector<int>& TObstacleMeta::GetIntersectingIds(Vector2D point) {
     }
 
     return it->second;
+}
+
+std::optional<int> TObstacleMeta::GetObstacle(Vector2D point) {
+    for (auto& id: GetIntersectingIds(point)) {
+        auto obstacle = Obstacles_[id];
+        if (abs2(obstacle.Center - point) < obstacle.Radius * obstacle.Radius) {
+            return id;
+        }
+    }
+    return std::nullopt;
 }
 
 }

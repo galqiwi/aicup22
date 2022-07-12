@@ -1,16 +1,24 @@
 #include "Strategy.h"
 #include "Constants.h"
+#include "DebugSingleton.h"
 #include "World.h"
 
 #include <cassert>
+#include <iostream>
 
 namespace Emulator {
 
 TStrategyAction GenerateRandomAction(int actionDuration) {
     assert(GetGlobalConstants());
 
+    auto speed = RandomUniformVector() * GetGlobalConstants()->maxUnitForwardSpeed * 2;
+
+    if (rand() % 20 == 0) {
+        speed = {0, 0};
+    }
+
     return {
-        .Speed = RandomUniformVector() * GetGlobalConstants()->maxUnitForwardSpeed * 2,
+        .Speed = speed,
         .ActionDuration = actionDuration,
     };
 }
@@ -47,10 +55,13 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
         actionStartTick += action.ActionDuration;
     }
 
-    assert(currentActionId != -1);
+    if (currentActionId == -1) {
+        currentActionId = static_cast<int>(Actions.size()) - 1;
+    }
+
     auto& action = Actions[currentActionId];
 
-    auto targetDirection = norm(action.Speed);
+    auto targetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):world.UnitsById.find(unitId)->second.Direction;
     bool shoot = false;
 
     // TODO: support multiple players
@@ -71,6 +82,28 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
         .TargetDirection = targetDirection,
         .Shoot = shoot,
     };
+}
+
+void VisualiseStrategy(const TStrategy& strategy, const TWorld &world, int unitId, int untilTick) {
+    TWorld currentWorld = world;
+    auto& unit = currentWorld.UnitsById[unitId];
+
+    std::vector<model::Vec2> line;
+    line.reserve(untilTick - currentWorld.CurrentTick);
+
+    auto foo = currentWorld.ProjectileById.size();
+
+    while (currentWorld.CurrentTick < untilTick) {
+        currentWorld.EmulateOrder(strategy.GetOrder(currentWorld, unitId));
+        currentWorld.Tick();
+        line.push_back(unit.Position.ToApi());
+        for (auto& [_, projectile]: currentWorld.ProjectileById) {
+            GetGlobalDebugInterface()->addCircle(projectile.Position.ToApi(), 0.1, debugging::Color(0, 1, 0, 1));
+        }
+    }
+
+    assert(GetGlobalDebugInterface());
+    GetGlobalDebugInterface()->addPolyLine(std::move(line), 0.15, debugging::Color(1, 0, 0, 1));
 }
 
 }

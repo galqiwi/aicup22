@@ -24,6 +24,16 @@ TWorld TWorld::FormApi(const model::Game& game) {
             .Position = Vector2D::FromApi(unit.position),
             .Direction = Vector2D::FromApi(unit.direction),
             .Velocity = Vector2D::FromApi(unit.velocity),
+            .Health = unit.health,
+            .Shield = unit.shield,
+            .ExtraLives = unit.extraLives,
+            .RemainingSpawnTime = unit.remainingSpawnTime,
+            .Aim = unit.aim,
+            .HealthRegenerationStartTick = unit.healthRegenerationStartTick,
+            .Weapon = unit.weapon,
+            .NextShotTick = unit.nextShotTick,
+            .Ammo = unit.ammo,
+            .ShieldPotions = unit.shieldPotions,
         };
     }
     output.CurrentTick = game.currentTick;
@@ -39,6 +49,19 @@ TWorld TWorld::FormApi(const model::Game& game) {
         .nextCenter = Vector2D::FromApi(game.zone.nextCenter),
         .nextRadius = game.zone.nextRadius,
     };
+
+    output.ProjectileById.reserve(game.projectiles.size());
+    for (auto& projectile: game.projectiles) {
+        output.ProjectileById.insert({projectile.id, {
+            .Id = projectile.id,
+            .WeaponTypeIndex = projectile.weaponTypeIndex,
+            .ShooterId = projectile.shooterId,
+            .ShooterPlayerId = projectile.shooterPlayerId,
+            .Position = Vector2D::FromApi(projectile.position),
+            .Velocity = Vector2D::FromApi(projectile.velocity),
+            .LifeTime = projectile.lifeTime,
+        }});
+    }
 
     return output;
 }
@@ -149,7 +172,42 @@ void TWorld::MoveCollidingUnit(TUnit& unit, Vector2D velocity) {
 }
 
 void TWorld::Tick() {
+    if (!Constants_) {
+        Constants_ = GetGlobalConstants();
+    }
+    assert(Constants_);
+
     ++CurrentTick;
+
+    std::vector<int> idsToErase;
+
+    for (auto& [_, projectile]: ProjectileById) {
+        projectile.LifeTime -= 1 / Constants_->ticksPerSecond;
+        if (projectile.LifeTime < 0) {
+            idsToErase.push_back(projectile.Id);
+            continue;
+        }
+        projectile.Position = projectile.Position + projectile.Velocity / Constants_->ticksPerSecond;
+
+        auto obstacle = Constants_->obstaclesMeta.GetObstacle(projectile.Position);
+        if (obstacle && !Constants_->obstacles[*obstacle].CanShootThrough) {
+            idsToErase.push_back(projectile.Id);
+            continue;
+        }
+
+        for (auto& [unitId, unit]: UnitsById) {
+            // TODO: microticks or other stuff
+            if (abs2(projectile.Position - unit.Position) < Constants_->unitRadius * Constants_->unitRadius) {
+                unit.Health -= Constants_->weapons[projectile.WeaponTypeIndex].projectileDamage;
+                idsToErase.push_back(projectile.Id);
+                break;
+            }
+        }
+    }
+
+    for (auto id: idsToErase) {
+        ProjectileById.erase(id);
+    }
 }
 
 const std::string LOAD_DUMP_VERSION = "6.0";

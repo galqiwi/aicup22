@@ -19,6 +19,16 @@ struct TUnit {
     Vector2D Position;
     Vector2D Direction;
     Vector2D Velocity;
+    double Health;
+    double Shield;
+    int ExtraLives;
+    std::optional<double> RemainingSpawnTime;
+    double Aim;
+    int HealthRegenerationStartTick;
+    std::optional<int> Weapon;
+    int NextShotTick;
+    std::vector<int> Ammo;
+    int ShieldPotions;
 };
 
 struct TOrder {
@@ -37,6 +47,16 @@ struct TZone {
     double nextRadius;
 };
 
+struct TProjectile {
+    int Id;
+    int WeaponTypeIndex;
+    int ShooterId;
+    int ShooterPlayerId;
+    Vector2D Position;
+    Vector2D Velocity;
+    double LifeTime;
+};
+
 class TWorld {
 public:
     void Emulate(const std::vector<TOrder>& orders);
@@ -49,6 +69,7 @@ public:
     int CurrentTick;
     std::unordered_map<int, TUnit> UnitsById;
     TZone Zone;
+    std::unordered_map<int, TProjectile> ProjectileById;
 
     void EmulateOrder(const TOrder& order);
     void Tick();
