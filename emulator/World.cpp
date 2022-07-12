@@ -33,6 +33,13 @@ TWorld TWorld::FormApi(const model::Game& game) {
         output.Constants_ = GetGlobalConstants();
     }
 
+    output.Zone = {
+        .currentCenter = Vector2D::FromApi(game.zone.currentCenter),
+        .currentRadius = game.zone.currentRadius,
+        .nextCenter = Vector2D::FromApi(game.zone.nextCenter),
+        .nextRadius = game.zone.nextRadius,
+    };
+
     return output;
 }
 

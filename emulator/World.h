@@ -30,6 +30,13 @@ struct TOrder {
     [[nodiscard]] model::UnitOrder ToApi() const;
 };
 
+struct TZone {
+    Vector2D currentCenter;
+    double currentRadius;
+    Vector2D nextCenter;
+    double nextRadius;
+};
+
 class TWorld {
 public:
     void Emulate(const std::vector<TOrder>& orders);
@@ -41,8 +48,9 @@ public:
     int MyId;
     int CurrentTick;
     std::unordered_map<int, TUnit> UnitsById;
-    void EmulateOrder(const TOrder& order);
+    TZone Zone;
 
+    void EmulateOrder(const TOrder& order);
     void Tick();
 private:
     Vector2D ClipVelocity(Vector2D velocity, const TUnit& unit);

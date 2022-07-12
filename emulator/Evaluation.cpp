@@ -20,7 +20,7 @@ double EvaluateStrategy(const TStrategy &strategy, const TWorld &world, int unit
     assert(GetGlobalDebugInterface());
 //    GetGlobalDebugInterface()->addPolyLine(std::move(line), 0.15, debugging::Color(1, 0, 0, 1));
 
-    return -abs2(unit.Position);
+    return -abs2(unit.Position - world.Zone.nextCenter);
 }
 
 }
