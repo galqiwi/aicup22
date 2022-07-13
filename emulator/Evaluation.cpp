@@ -22,9 +22,9 @@ double EvaluateWorld(const TWorld& world, const TUnit& unit) {
     } else {
         auto dist = abs(unit.Position - GetTarget(world, unit.Id));
         score += dist;
-//        if (dist < 0.5) {
-//            score -= 10;
-//        }
+        if (dist < GetGlobalConstants()->unitRadius / 2) {
+            score -= 10;
+        }
     }
 
     return score;
