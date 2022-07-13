@@ -39,6 +39,7 @@ struct TOrder {
     bool Pickup{false};
     int LootId{-1};
     bool UseShieldPotion{false};
+    bool IsRotation{false};
 
     [[nodiscard]] model::UnitOrder ToApi() const;
 };
@@ -89,6 +90,10 @@ public:
     std::unordered_map<int, TProjectile> ProjectileById;
     std::unordered_map<int, TLoot> LootById;
 
+    // TODO: support multiple players
+    int LastRotationId{std::numeric_limits<int>::min()};
+
+    void PrepareEmulation();
     void EmulateOrder(const TOrder& order);
     void Tick();
 private:

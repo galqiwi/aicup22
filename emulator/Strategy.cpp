@@ -3,6 +3,7 @@
 #include "DebugSingleton.h"
 #include "World.h"
 #include "LootPicker.h"
+#include "Evaluation.h"
 
 #include <cassert>
 #include <iostream>
@@ -87,16 +88,39 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
 
     const auto& unit = world.UnitsById.find(unitId)->second;
 
+
+    bool isRotation = (world.CurrentTick - world.LastRotationId < constants->ticksPerSecond * 4);
+    Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
+
     // TODO: support multiple players
     if (world.UnitsById.size() > 1) {
+        std::optional<double> closestDist2;
+        int closestUnitId;
         for (const auto& [_, otherUnit]: world.UnitsById) {
             if (otherUnit.PlayerId == world.MyId) {
                 continue;
             }
+
+            auto dist2 = abs2(unit.Position - otherUnit.Position);
+            if (!closestDist2 || dist2 < *closestDist2) {
+                closestDist2 = dist2;
+                closestUnitId = otherUnit.Id;
+            }
+        }
+        if (closestDist2) {
+            if (*closestDist2 > 900 && isRotation) {
+                return {
+                    .UnitId = unitId,
+                    .TargetVelocity = action.Speed,
+                    .TargetDirection = rotationDirection,
+                    .Shoot = true,
+                    .IsRotation = true,
+                };
+            }
             return {
                 .UnitId = unitId,
                 .TargetVelocity = action.Speed,
-                .TargetDirection = GetPreventiveTargetDirection(unit, otherUnit),
+                .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitsById.find(closestUnitId)->second),
                 .Shoot = true,
             };
         }
@@ -109,9 +133,10 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
         return {
             .UnitId = unitId,
             .TargetVelocity = Vector2D{0, 0},
-            .TargetDirection = unit.Direction,
+            .TargetDirection = isRotation ? rotationDirection:unit.Direction,
             .Pickup = lootId.has_value(),
             .LootId = (lootId.has_value() ? *lootId:0),
+            .IsRotation = isRotation,
         };
     }
 
@@ -121,8 +146,9 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
     return {
         .UnitId = unitId,
         .TargetVelocity = action.Speed,
-        .TargetDirection = targetDirection,
+        .TargetDirection = isRotation ? rotationDirection: targetDirection,
         .UseShieldPotion = (unit.ShieldPotions > 0),
+        .IsRotation = isRotation,
     };
 }
 
@@ -144,16 +170,29 @@ void VisualiseStrategy(const TStrategy& strategy, const TWorld &world, int unitI
     auto foo = currentWorld.ProjectileById.size();
 
     while (currentWorld.CurrentTick < untilTick) {
+        currentWorld.PrepareEmulation();
         currentWorld.EmulateOrder(strategy.GetOrder(currentWorld, unitId));
         currentWorld.Tick();
         line.push_back(unit.Position.ToApi());
+
+        auto score = EvaluateWorld(world, unit);
+        debugging::Color color = debugging::Color(0, 1, 0, 1);
+        if (!get<1>(score).value) {
+            color = debugging::Color(0.5, 0.5, 0.5, 1);
+        } else {
+            if (*get<1>(score).value > 0) {
+                color = debugging::Color(1, 0, 0, 1);
+            }
+        }
+        GetGlobalDebugInterface()->addCircle(unit.Position.ToApi(), 0.1, color);
+
         for (auto& [_, projectile]: currentWorld.ProjectileById) {
             GetGlobalDebugInterface()->addCircle(projectile.Position.ToApi(), 0.1, debugging::Color(0, 1, 0, 1));
         }
     }
 
     assert(GetGlobalDebugInterface());
-    GetGlobalDebugInterface()->addPolyLine(std::move(line), 0.15, debugging::Color(1, 0, 0, 1));
+//    GetGlobalDebugInterface()->addPolyLine(std::move(line), 0.15, debugging::Color(1, 0, 0, 1));
 }
 
 }

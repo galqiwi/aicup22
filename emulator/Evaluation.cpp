@@ -69,6 +69,8 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
         get<1>(score).value = -combatSafety;
     }
 
+//    return score;
+
     auto distScore = abs(unit.Position - GetTarget(world, unit.Id));
     if (distScore < GetGlobalConstants()->unitRadius / 2) {
         distScore -= 10;
@@ -85,6 +87,7 @@ TScore EvaluateStrategy(const TStrategy &strategy, const TWorld& world, int unit
     TScore score = {0, {std::nullopt}, 0};
 
     while (currentWorld.CurrentTick < untilTick) {
+        currentWorld.PrepareEmulation();
         currentWorld.EmulateOrder(strategy.GetOrder(currentWorld, unitId));
         currentWorld.Tick();
 

@@ -125,6 +125,10 @@ void TWorld::EmulateOrder(const TOrder &order) {
     MoveCollidingUnit(unit, velocity);
 
     RotateUnit(unit, order.TargetDirection);
+
+    if (order.IsRotation) {
+        LastRotationId = CurrentTick;
+    }
 }
 
 void TWorld::RotateUnit(TUnit &unit, Vector2D targetDirection) {
@@ -205,13 +209,11 @@ void TWorld::MoveCollidingUnit(TUnit& unit, Vector2D velocity) {
     unit.Position = unit.Position + unit.Velocity / Constants_->ticksPerSecond;
 }
 
-void TWorld::Tick() {
+void TWorld::PrepareEmulation() {
     if (!Constants_) {
         Constants_ = GetGlobalConstants();
     }
     assert(Constants_);
-
-    ++CurrentTick;
 
     std::vector<int> idsToErase;
 
@@ -252,6 +254,10 @@ void TWorld::Tick() {
     for (auto id: idsToErase) {
         ProjectileById.erase(id);
     }
+}
+
+void TWorld::Tick() {
+    ++CurrentTick;
 }
 
 const std::string LOAD_DUMP_VERSION = "6.0";

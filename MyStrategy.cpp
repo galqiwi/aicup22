@@ -54,6 +54,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
             strategy = Emulator::GenerateRandomStrategy(world.CurrentTick, actionDuration, nActions);
         }
         auto score = Emulator::EvaluateStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
+//        Emulator::VisualiseStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
 
         if (!bestScore || score < *bestScore) {
             bestScore = score;
@@ -62,8 +63,8 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     }
 
 //    debugInterface->addCircle(GetTarget(world, unit.id).ToApi(), 0.25, debugging::Color(1, 0, 1, 1));
-//    debugInterface->addPlacedText(unit.position, std::to_string(*bestScore), model::Vec2{1, 0}, 2, debugging::Color{0, 0, 0, 1});
 //    Emulator::VisualiseStrategy(bestStrategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
+//    debugInterface->addPlacedText(unit.position, std::to_string(*bestScore), model::Vec2{1, 0}, 2, debugging::Color{0, 0, 0, 1});
 
     auto order = bestStrategy.GetOrder(world, unit.id);
 
