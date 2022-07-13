@@ -51,14 +51,22 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
 
     // TODO: support more than one player
     if (world.UnitsById.size() > 1) {
-        double combatSafetyScore = 0;
-        for (auto& [otherUnitId, otherUnit]: world.UnitsById) {
-            if (otherUnitId == unit.Id) {
+        double combatSafety = 0;
+        double combatRadius = 30;
+        bool canFight = false;
+        for (auto& [_, otherUnit]: world.UnitsById) {
+            if (otherUnit.PlayerId == unit.PlayerId) {
                 continue;
             }
-            combatSafetyScore += fabs(abs(unit.Position - otherUnit.Position) - 30);
+            if (abs2(unit.Position - otherUnit.Position) < combatRadius * combatRadius) {
+                canFight = true;
+                combatSafety -= otherUnit.Health + otherUnit.Shield;
+            }
         }
-        get<1>(score).value = combatSafetyScore;
+        if (canFight) {
+            combatSafety += unit.Health + unit.Shield;
+        }
+        get<1>(score).value = -combatSafety;
     }
 
     auto distScore = abs(unit.Position - GetTarget(world, unit.Id));
