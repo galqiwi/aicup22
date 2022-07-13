@@ -89,7 +89,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
     const auto& unit = world.UnitsById.find(unitId)->second;
 
 
-    bool isRotation = (world.CurrentTick - world.LastRotationId < constants->ticksPerSecond * 4);
+    bool isRotation = true;//(world.CurrentTick - world.LastRotationId < constants->ticksPerSecond * 4);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
     // TODO: support multiple players
