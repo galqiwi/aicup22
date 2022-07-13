@@ -15,7 +15,7 @@ double EvaluateWorld(const TWorld& world, const TUnit& unit) {
             if (otherUnitId == unit.Id) {
                 continue;
             }
-            score += fabs(abs(unit.Position - otherUnit.Position) - 20);
+            score += fabs(abs(unit.Position - otherUnit.Position) - 30);
         }
     } else {
         score += abs(unit.Position - world.Zone.nextCenter);

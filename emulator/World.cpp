@@ -205,6 +205,14 @@ void TWorld::Tick() {
         }
     }
 
+    for (auto& [unitId, unit]: UnitsById) {
+        if (unit.PlayerId == MyId) {
+            continue;
+        }
+
+        unit.Position = unit.Position + unit.Velocity / Constants_->ticksPerSecond;
+    }
+
     for (auto id: idsToErase) {
         ProjectileById.erase(id);
     }

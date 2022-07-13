@@ -37,6 +37,28 @@ TStrategy GenerateRandomStrategy(int startTick, int actionDuration, int nActions
     };
 }
 
+Vector2D GetPreventiveTargetDirection(const TUnit& unit, const TUnit& enemy) {
+    auto targetDirection = enemy.Position - unit.Position;
+
+    return norm(targetDirection);
+
+    if (!unit.Weapon) {
+        return norm(targetDirection);
+    }
+
+    auto projectileSpeed = GetGlobalConstants()->weapons[*unit.Weapon].projectileSpeed;
+
+    auto velocityProjection = enemy.Velocity - targetDirection * ((enemy.Velocity * targetDirection) / abs2(targetDirection));
+
+    auto angleAdjustmentSin = abs(velocityProjection) / projectileSpeed;
+    if (fabs(angleAdjustmentSin) < 0.01) {
+        return norm(targetDirection);
+    }
+
+    auto angleAdjustmentCos = sqrt(1 - angleAdjustmentSin * angleAdjustmentSin);
+    return norm(targetDirection) * angleAdjustmentCos + norm(velocityProjection) * angleAdjustmentSin;
+}
+
 TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
     int currentActionId = -1;
     int actionStartTick = StartTick;
@@ -70,7 +92,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
             if (unit.PlayerId == world.MyId) {
                 continue;
             }
-            targetDirection = norm(unit.Position - world.UnitsById.find(unitId)->second.Position);
+            targetDirection = GetPreventiveTargetDirection(world.UnitsById.find(unitId)->second, unit);
             shoot = true;
             break;
         }
