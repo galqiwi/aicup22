@@ -1,6 +1,8 @@
 #include "Evaluation.h"
 #include "emulator/DebugSingleton.h"
 
+#include "LootPicker.h"
+
 #include <cassert>
 #include <iostream>
 
@@ -18,7 +20,11 @@ double EvaluateWorld(const TWorld& world, const TUnit& unit) {
             score += fabs(abs(unit.Position - otherUnit.Position) - 30);
         }
     } else {
-        score += abs(unit.Position - world.Zone.nextCenter);
+        auto dist = abs(unit.Position - GetTarget(world, unit.Id));
+        score += dist;
+//        if (dist < 0.5) {
+//            score -= 10;
+//        }
     }
 
     return score;

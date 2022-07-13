@@ -7,6 +7,8 @@
 #include "emulator/DebugSingleton.h"
 #include "emulator/Evaluation.h"
 #include "emulator/World.h"
+#include "emulator/LootPicker.h"
+#include "emulator/Memory.h"
 
 MyStrategy::MyStrategy(const model::Constants& constants) {
     Emulator::SetGlobalConstants(Emulator::TConstants::FromAPI(constants));
@@ -27,6 +29,8 @@ model::Order MyStrategy::getOrder(const model::Game& game, DebugInterface* debug
 
 model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterface* debugInterface, const model::Unit& unit) {
     static std::vector<Emulator::TStrategy> bestStrategies;
+    static Emulator::TMemory memory;
+
     SetGlobalDebugInterface(debugInterface);
 
     int actionDuration = (int)lround(Emulator::GetGlobalConstants()->ticksPerSecond) / 2;
@@ -35,6 +39,8 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     int nMutations = 5;
 
     Emulator::TWorld world = Emulator::TWorld::FormApi(game);
+    memory.Update(world);
+    memory.InjectKnowledge(world);
 
     std::optional<double> bestScore = std::nullopt;
     Emulator::TStrategy bestStrategy;
@@ -55,10 +61,15 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         }
     }
 
+//    debugInterface->addCircle(GetTarget(world, unit.id).ToApi(), 0.25, debugging::Color(1, 0, 1, 1));
 //    debugInterface->addPlacedText(unit.position, std::to_string(*bestScore), model::Vec2{1, 0}, 2, debugging::Color{0, 0, 0, 1});
 //    Emulator::VisualiseStrategy(bestStrategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
 
     auto order = bestStrategy.GetOrder(world, unit.id);
+
+    if (order.Pickup) {
+        memory.ForgetLoot(order.LootId);
+    }
 
     bestStrategies.resize(0);
     for (int i = 0; i < nMutations; ++i) {

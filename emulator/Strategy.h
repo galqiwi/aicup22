@@ -10,6 +10,7 @@ namespace Emulator {
 struct TStrategyAction {
     Vector2D Speed;
     int ActionDuration;
+
 };
 
 struct TStrategy {

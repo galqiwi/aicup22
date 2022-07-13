@@ -2,6 +2,7 @@
 #include "Constants.h"
 #include "DebugSingleton.h"
 #include "World.h"
+#include "LootPicker.h"
 
 #include <cassert>
 #include <iostream>
@@ -62,6 +63,7 @@ Vector2D GetPreventiveTargetDirection(const TUnit& unit, const TUnit& enemy) {
 TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
     int currentActionId = -1;
     int actionStartTick = StartTick;
+    auto constants = GetGlobalConstants();
 
     for (int i = 0; i < Actions.size(); ++i) {
         auto& action = Actions[i];
@@ -80,21 +82,44 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
     if (currentActionId == -1) {
         currentActionId = static_cast<int>(Actions.size()) - 1;
     }
-
     auto& action = Actions[currentActionId];
 
-    auto targetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):world.UnitsById.find(unitId)->second.Direction;
+    const auto& unit = world.UnitsById.find(unitId)->second;
+
+    auto targetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction;
     bool shoot = false;
 
     // TODO: support multiple players
     if (world.UnitsById.size() > 1) {
-        for (const auto& [_, unit]: world.UnitsById) {
-            if (unit.PlayerId == world.MyId) {
+        for (const auto& [_, otherUnit]: world.UnitsById) {
+            if (otherUnit.PlayerId == world.MyId) {
                 continue;
             }
-            targetDirection = GetPreventiveTargetDirection(world.UnitsById.find(unitId)->second, unit);
+            targetDirection = GetPreventiveTargetDirection(unit, otherUnit);
             shoot = true;
             break;
+        }
+    } else {
+        auto lootId = GetTargetLoot(world, unitId);
+        if (lootId) {
+            if (abs(world.LootById.find(*lootId)->second.Position - unit.Position) < constants->unitRadius) {
+                return {
+                    .UnitId = unitId,
+                    .TargetVelocity = action.Speed,
+                    .TargetDirection = targetDirection,
+                    .Pickup = true,
+                    .LootId = *lootId,
+                };
+            }
+        }
+
+        if (unit.ShieldPotions) {
+            return {
+                .UnitId = unitId,
+                .TargetVelocity = action.Speed,
+                .TargetDirection = targetDirection,
+                .UseShieldPotion = true,
+            };
         }
     }
 

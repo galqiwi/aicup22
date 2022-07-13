@@ -20,4 +20,8 @@ class TObstacleMeta;
 
 struct TConstants;
 
+struct TMemory;
+
+struct TLoot;
+
 }

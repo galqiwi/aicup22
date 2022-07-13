@@ -35,7 +35,10 @@ struct TOrder {
     int UnitId;
     Vector2D TargetVelocity;
     Vector2D TargetDirection;
-    bool Shoot;
+    bool Shoot{false};
+    bool Pickup{false};
+    int LootId{-1};
+    bool UseShieldPotion{false};
 
     [[nodiscard]] model::UnitOrder ToApi() const;
 };
@@ -57,6 +60,20 @@ struct TProjectile {
     double LifeTime;
 };
 
+enum TLootItem {
+    Weapon = 0,
+    ShieldPotions = 1,
+    Ammo = 2,
+};
+
+struct TLoot {
+    int Id;
+    Vector2D Position;
+    TLootItem Item;
+    int WeaponType;
+    int Amount;
+};
+
 class TWorld {
 public:
     void Emulate(const std::vector<TOrder>& orders);
@@ -70,6 +87,7 @@ public:
     std::unordered_map<int, TUnit> UnitsById;
     TZone Zone;
     std::unordered_map<int, TProjectile> ProjectileById;
+    std::unordered_map<int, TLoot> LootById;
 
     void EmulateOrder(const TOrder& order);
     void Tick();

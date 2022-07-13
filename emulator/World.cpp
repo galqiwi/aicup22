@@ -1,6 +1,8 @@
 #include "World.h"
 #include "Strategy.h"
 
+#include "model/Item.hpp"
+
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -10,9 +12,17 @@ namespace Emulator {
 model::UnitOrder TOrder::ToApi() const {
     if (Shoot) {
         return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::make_shared<model::ActionOrder::Aim>(true)};
-    } else {
-        return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::nullopt};
     }
+
+    if (Pickup) {
+        return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::make_shared<model::ActionOrder::Pickup>(LootId)};
+    }
+
+    if (UseShieldPotion) {
+        return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::make_shared<model::ActionOrder::UseShieldPotion>()};
+    }
+
+    return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::nullopt};
 }
 
 TWorld TWorld::FormApi(const model::Game& game) {
@@ -61,6 +71,30 @@ TWorld TWorld::FormApi(const model::Game& game) {
             .Velocity = Vector2D::FromApi(projectile.velocity),
             .LifeTime = projectile.lifeTime,
         }});
+    }
+
+    output.LootById.reserve(game.loot.size());
+    for (auto& loot: game.loot) {
+        TLoot newLoot = {
+            .Id = loot.id,
+            .Position = Vector2D::FromApi(loot.position),
+        };
+
+        if (auto weapon = dynamic_cast<model::Item::Weapon*>(loot.item.get())) {
+            newLoot.Item = Weapon;
+            newLoot.WeaponType = weapon->typeIndex;
+        }
+        if (auto ammo = dynamic_cast<model::Item::Ammo*>(loot.item.get())) {
+            newLoot.Item = Ammo;
+            newLoot.WeaponType = ammo->weaponTypeIndex;
+            newLoot.Amount = ammo->amount;
+        }
+        if (auto potions = dynamic_cast<model::Item::ShieldPotions*>(loot.item.get())) {
+            newLoot.Item = ShieldPotions;
+            newLoot.Amount = potions->amount;
+        }
+
+        output.LootById.insert({newLoot.Id, newLoot});
     }
 
     return output;
