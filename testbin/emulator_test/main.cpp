@@ -4,6 +4,11 @@
 #include "emulator/World.h"
 
 int main() {
+    double a = 100.1;
+    double b = a;
+    std::cout << (a == a) << std::endl;
+
+    abort();
     int emulationSteps = 201;
     std::ofstream fout("test.output");
 

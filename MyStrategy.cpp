@@ -42,7 +42,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     memory.Update(world);
     memory.InjectKnowledge(world);
 
-    std::optional<double> bestScore = std::nullopt;
+    std::optional<Emulator::TScore> bestScore = std::nullopt;
     Emulator::TStrategy bestStrategy;
 
     for (int i = 0; i < nStrategies; ++i) {
@@ -55,7 +55,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         }
         auto score = Emulator::EvaluateStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
 
-        if (!bestScore || *bestScore > score) {
+        if (!bestScore || score < *bestScore) {
             bestScore = score;
             bestStrategy = std::move(strategy);
         }
