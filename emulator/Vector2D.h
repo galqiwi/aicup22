@@ -37,6 +37,10 @@ inline double operator*(Vector2D a, Vector2D b) {
     return a.x * b.x + a.y * b.y;
 }
 
+inline double operator%(Vector2D a, Vector2D b) {
+    return a.x * b.y - a.y * b.x;
+}
+
 inline double abs2(Vector2D a) {
     return a.x * a.x + a.y * a.y;
 }
@@ -54,5 +58,7 @@ std::ostream& operator<<(std::ostream& out, const Vector2D& v);
 std::istream& operator>>(std::istream& in, Vector2D& v);
 
 Vector2D RandomUniformVector();
+
+bool SegmentIntersectsCircle(Vector2D p1, Vector2D p2, Vector2D center, double radius);
 
 }

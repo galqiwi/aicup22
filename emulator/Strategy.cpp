@@ -104,7 +104,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
 
     // pick loot if possible
     auto lootId = GetTargetLoot(world, unitId);
-    auto target = GetTarget(world, unitId);
+    auto target = GetTarget(world, lootId);
     if (abs(target - unit.Position) < constants->unitRadius) {
         return {
             .UnitId = unitId,

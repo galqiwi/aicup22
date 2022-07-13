@@ -221,7 +221,7 @@ void TWorld::Tick() {
             idsToErase.push_back(projectile.Id);
             continue;
         }
-        projectile.Position = projectile.Position + projectile.Velocity / Constants_->ticksPerSecond;
+        auto newPosition = projectile.Position + projectile.Velocity / Constants_->ticksPerSecond;
 
         auto obstacle = Constants_->obstaclesMeta.GetObstacle(projectile.Position);
         if (obstacle && !Constants_->obstacles[*obstacle].CanShootThrough) {
@@ -231,12 +231,14 @@ void TWorld::Tick() {
 
         for (auto& [unitId, unit]: UnitsById) {
             // TODO: microticks or other stuff
-            if (abs2(projectile.Position - unit.Position) < Constants_->unitRadius * Constants_->unitRadius) {
+            if (SegmentIntersectsCircle(projectile.Position, newPosition, unit.Position, Constants_->unitRadius)) {
                 unit.Health -= Constants_->weapons[projectile.WeaponTypeIndex].projectileDamage;
                 idsToErase.push_back(projectile.Id);
                 break;
             }
         }
+
+        projectile.Position = newPosition;
     }
 
     for (auto& [unitId, unit]: UnitsById) {

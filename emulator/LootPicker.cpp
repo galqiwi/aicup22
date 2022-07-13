@@ -1,10 +1,14 @@
 #include "LootPicker.h"
+#include <cassert>
 
 #include "World.h"
 
 namespace Emulator {
 
 std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
+    static auto constants = GetGlobalConstants();
+    assert(constants);
+
     auto& unit = world.UnitsById.find(unitId)->second;
 
     std::optional<double> minDist2 = std::nullopt;
@@ -23,13 +27,13 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
             if (loot.WeaponType != 2 /* bow */) {
                 continue;
             }
-            if (unit.Ammo[2] == GetGlobalConstants()->weapons[2].maxInventoryAmmo) {
+            if (unit.Ammo[2] == constants->weapons[2].maxInventoryAmmo) {
                 continue;
             }
         }
 
         if (loot.Item == ShieldPotions) {
-            if (unit.ShieldPotions == GetGlobalConstants()->maxShieldPotionsInInventory) {
+            if (unit.ShieldPotions == constants->maxShieldPotionsInInventory) {
                 continue;
             }
         }
@@ -48,13 +52,16 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
     return output;
 }
 
-Vector2D GetTarget(const TWorld &world, int unitId) {
-    auto lootId = GetTargetLoot(world, unitId);
-    if (lootId) {
-        return world.LootById.find(*lootId)->second.Position;
+Vector2D GetTarget(const TWorld &world, std::optional<int> loot) {
+    if (loot) {
+        return world.LootById.find(*loot)->second.Position;
     } else {
         return world.Zone.nextCenter;
     }
+}
+
+Vector2D GetTarget(const TWorld &world, int unitId) {
+    return GetTarget(world, GetTargetLoot(world, unitId));
 }
 
 }
