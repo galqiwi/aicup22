@@ -9,7 +9,8 @@
 namespace Emulator {
 
 double EvaluateWorld(const TWorld& world, const TUnit& unit) {
-    auto score = - unit.Health * 10000;
+    static auto constants = GetGlobalConstants();
+    auto score = (constants->unitHealth - unit.Health) * 10000;
 
     // TODO: support more than one player
     if (world.UnitsById.size() > 1) {
@@ -19,12 +20,13 @@ double EvaluateWorld(const TWorld& world, const TUnit& unit) {
             }
             score += fabs(abs(unit.Position - otherUnit.Position) - 30);
         }
-    } else {
-        auto dist = abs(unit.Position - GetTarget(world, unit.Id));
-        score += dist;
-        if (dist < GetGlobalConstants()->unitRadius / 2) {
-            score -= 10;
-        }
+        return score;
+    }
+
+    auto dist = abs(unit.Position - GetTarget(world, unit.Id));
+    score += dist;
+    if (dist < GetGlobalConstants()->unitRadius / 2) {
+        score -= 10;
     }
 
     return score;
