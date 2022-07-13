@@ -52,7 +52,7 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
     // TODO: support more than one player
     if (world.UnitsById.size() > 1) {
         double combatSafety = 0;
-        double combatRadius = 30;
+        double combatRadius = 40;
         bool canFight = false;
         for (auto& [_, otherUnit]: world.UnitsById) {
             if (otherUnit.PlayerId == unit.PlayerId) {

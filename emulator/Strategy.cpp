@@ -108,7 +108,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
             }
         }
         if (closestDist2) {
-            if (*closestDist2 > 900 && isRotation) {
+            if (*closestDist2 > 1600 && isRotation) {
                 return {
                     .UnitId = unitId,
                     .TargetVelocity = action.Speed,
