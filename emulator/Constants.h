@@ -120,6 +120,7 @@ struct TConstants {
     double stepsSoundTravelDistance;
     // List of properties of every weapon type
     std::vector<model::WeaponProperties> weapons;
+    std::vector<model::SoundProperties> sounds;
 
     static TConstants FromAPI(const model::Constants& apiConstants);
 };

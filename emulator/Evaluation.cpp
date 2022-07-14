@@ -50,21 +50,26 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
     std::get<0>(score) = constants->unitHealth - unit.Health;
 
     // TODO: support more than one player
-    if (world.UnitsById.size() > 1) {
+    if (world.UnitById.size() > 1) {
         double combatSafety = 0;
         double combatRadius = 40;
-        bool canFight = false;
-        for (auto& [_, otherUnit]: world.UnitsById) {
+        std::optional<double> minDist = std::nullopt;
+        for (auto& [_, otherUnit]: world.UnitById) {
             if (otherUnit.PlayerId == unit.PlayerId) {
                 continue;
             }
-            if (abs2(unit.Position - otherUnit.Position) < combatRadius * combatRadius) {
-                canFight = true;
-                combatSafety -= otherUnit.Health + otherUnit.Shield;
+
+            auto dist = abs(unit.Position - otherUnit.Position);
+            if (dist < combatRadius) {
+                combatSafety -= (otherUnit.Health + otherUnit.Shield) * ((combatRadius - dist) / combatRadius);
+                if (!minDist || dist < *minDist) {
+                    minDist = dist;
+                }
             }
+
         }
-        if (canFight) {
-            combatSafety += unit.Health + unit.Shield;
+        if (minDist) {
+            combatSafety += (unit.Health + unit.Shield) * ((combatRadius - *minDist) / combatRadius);
         }
         get<1>(score).value = -combatSafety;
     }
@@ -82,7 +87,7 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
 
 TScore EvaluateStrategy(const TStrategy &strategy, const TWorld& world, int unitId, int untilTick) {
     TWorld currentWorld = world;
-    const auto& unit = currentWorld.UnitsById[unitId];
+    const auto& unit = currentWorld.UnitById[unitId];
 
     TScore score = {0, {std::nullopt}, 0};
 

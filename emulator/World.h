@@ -85,7 +85,7 @@ public:
 
     int MyId;
     int CurrentTick;
-    std::unordered_map<int, TUnit> UnitsById;
+    std::unordered_map<int, TUnit> UnitById;
     TZone Zone;
     std::unordered_map<int, TProjectile> ProjectileById;
     std::unordered_map<int, TLoot> LootById;

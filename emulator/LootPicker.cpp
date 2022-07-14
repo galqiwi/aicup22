@@ -9,7 +9,7 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
     static auto constants = GetGlobalConstants();
     assert(constants);
 
-    auto& unit = world.UnitsById.find(unitId)->second;
+    auto& unit = world.UnitById.find(unitId)->second;
 
     std::optional<double> minDist2 = std::nullopt;
     std::optional<int> output = std::nullopt;

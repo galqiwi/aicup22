@@ -61,6 +61,7 @@ TConstants TConstants::FromAPI(const model::Constants &apiConstants) {
     auto shieldPotionUseTime = apiConstants.shieldPotionUseTime;
     auto stepsSoundTravelDistance = apiConstants.stepsSoundTravelDistance;
     auto weapons = apiConstants.weapons;
+    auto sounds = apiConstants.sounds;
 
     return {
         .obstacles = std::move(obstacles),
@@ -99,6 +100,7 @@ TConstants TConstants::FromAPI(const model::Constants &apiConstants) {
         .shieldPotionUseTime = shieldPotionUseTime,
         .stepsSoundTravelDistance = stepsSoundTravelDistance,
         .weapons = weapons,
+        .sounds = sounds,
     };
 }
 

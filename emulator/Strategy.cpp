@@ -86,17 +86,17 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
 
     auto& action = Actions[currentActionId];
 
-    const auto& unit = world.UnitsById.find(unitId)->second;
+    const auto& unit = world.UnitById.find(unitId)->second;
 
 
     bool isRotation = true;//(world.CurrentTick - world.LastRotationId < constants->ticksPerSecond * 4);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
     // TODO: support multiple players
-    if (world.UnitsById.size() > 1) {
+    if (world.UnitById.size() > 1) {
         std::optional<double> closestDist2;
         int closestUnitId;
-        for (const auto& [_, otherUnit]: world.UnitsById) {
+        for (const auto& [_, otherUnit]: world.UnitById) {
             if (otherUnit.PlayerId == world.MyId) {
                 continue;
             }
@@ -120,7 +120,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
             return {
                 .UnitId = unitId,
                 .TargetVelocity = action.Speed,
-                .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitsById.find(closestUnitId)->second),
+                .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second),
                 .Shoot = true,
             };
         }
@@ -162,7 +162,7 @@ TStrategy TStrategy::Mutate() {
 
 void VisualiseStrategy(const TStrategy& strategy, const TWorld &world, int unitId, int untilTick) {
     TWorld currentWorld = world;
-    auto& unit = currentWorld.UnitsById[unitId];
+    auto& unit = currentWorld.UnitById[unitId];
 
     std::vector<model::Vec2> line;
     line.reserve(untilTick - currentWorld.CurrentTick);

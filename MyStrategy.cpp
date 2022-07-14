@@ -9,6 +9,7 @@
 #include "emulator/World.h"
 #include "emulator/LootPicker.h"
 #include "emulator/Memory.h"
+#include "emulator/Sound.h"
 
 MyStrategy::MyStrategy(const model::Constants& constants) {
     Emulator::SetGlobalConstants(Emulator::TConstants::FromAPI(constants));
@@ -40,6 +41,10 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 
     Emulator::TWorld world = Emulator::TWorld::FormApi(game);
     memory.Update(world);
+    for (const auto& sound: game.sounds) {
+        memory.UpdateSoundKnowledge(world, Emulator::TSound::FromApi(sound));
+    }
+
     memory.InjectKnowledge(world);
 
     std::optional<Emulator::TScore> bestScore = std::nullopt;
@@ -62,9 +67,15 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         }
     }
 
+//    for (const auto& sound: game.sounds) {
+//        debugInterface->addCircle(sound.position, 0.25, debugging::Color(1, 0, 1, 1));
+//    }
 //    debugInterface->addCircle(GetTarget(world, unit.id).ToApi(), 0.25, debugging::Color(1, 0, 1, 1));
 //    Emulator::VisualiseStrategy(bestStrategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
 //    debugInterface->addPlacedText(unit.position, std::to_string(*bestScore), model::Vec2{1, 0}, 2, debugging::Color{0, 0, 0, 1});
+//    for (const auto& [_, unitToDraw]: world.UnitById) {
+//        debugInterface->addCircle(unitToDraw.Position.ToApi(), 0.6, debugging::Color(0, 1, 1, 1));
+//    }
 
     auto order = bestStrategy.GetOrder(world, unit.id);
 

@@ -28,7 +28,7 @@ model::UnitOrder TOrder::ToApi() const {
 TWorld TWorld::FormApi(const model::Game& game) {
     TWorld output;
     for (const auto& unit: game.units) {
-        output.UnitsById[unit.id] = TUnit{
+        output.UnitById[unit.id] = TUnit{
             .Id = unit.id,
             .PlayerId = unit.playerId,
             .Position = Vector2D::FromApi(unit.position),
@@ -116,9 +116,9 @@ void TWorld::EmulateOrder(const TOrder &order) {
 
     auto unitId = order.UnitId;
 
-    assert(UnitsById.contains(unitId));
+    assert(UnitById.contains(unitId));
 
-    auto &unit = UnitsById[unitId];
+    auto &unit = UnitById[unitId];
 
     auto targetVelocity = ClipVelocity(order.TargetVelocity, unit);
     auto velocity = ApplyAcceleration(unit.Velocity, targetVelocity);
@@ -231,7 +231,7 @@ void TWorld::PrepareEmulation() {
             continue;
         }
 
-        for (auto& [unitId, unit]: UnitsById) {
+        for (auto& [unitId, unit]: UnitById) {
             // TODO: microticks or other stuff
             if (SegmentIntersectsCircle(projectile.Position, newPosition, unit.Position, Constants_->unitRadius)) {
                 unit.Health -= Constants_->weapons[projectile.WeaponTypeIndex].projectileDamage;
@@ -243,7 +243,7 @@ void TWorld::PrepareEmulation() {
         projectile.Position = newPosition;
     }
 
-    for (auto& [unitId, unit]: UnitsById) {
+    for (auto& [unitId, unit]: UnitById) {
         if (unit.PlayerId == MyId) {
             continue;
         }
@@ -254,10 +254,22 @@ void TWorld::PrepareEmulation() {
     for (auto id: idsToErase) {
         ProjectileById.erase(id);
     }
+
+    for (auto& [unitId, unit]: UnitById) {
+        if (unit.PlayerId != MyId) {
+            continue;
+        }
+        if (abs(unit.Position - Zone.currentCenter) > Zone.currentRadius - Constants_->unitRadius * 4) {
+            unit.Health -= Constants_->zoneDamagePerSecond / Constants_->ticksPerSecond;
+        }
+    }
 }
 
 void TWorld::Tick() {
+    assert(Constants_);
+
     ++CurrentTick;
+    Zone.currentRadius -= Constants_->zoneSpeed / Constants_->ticksPerSecond;
 }
 
 const std::string LOAD_DUMP_VERSION = "6.0";
@@ -274,8 +286,8 @@ void TWorld::Dump(const char *filename) {
 
     fout << MyId << std::endl;
 
-    fout << UnitsById.size() << std::endl;
-    for (const auto& [_, unit]: UnitsById) {
+    fout << UnitById.size() << std::endl;
+    for (const auto& [_, unit]: UnitById) {
         fout << unit.Id << std::endl;
         fout << unit.PlayerId << std::endl;
         fout << unit.Position << std::endl;
@@ -287,7 +299,7 @@ void TWorld::Dump(const char *filename) {
 void TWorld::Load(const char *filename) {
     std::ifstream fin(filename);
     fin.precision(20);
-    UnitsById = {};
+    UnitById = {};
 
     std::string version;
     fin >> version;
@@ -316,7 +328,7 @@ void TWorld::Load(const char *filename) {
         fin >> unit.Position;
         fin >> unit.Direction;
         fin >> unit.Velocity;
-        UnitsById[unit.PlayerId] = unit;
+        UnitById[unit.PlayerId] = unit;
     }
 }
 

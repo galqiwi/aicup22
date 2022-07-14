@@ -16,7 +16,7 @@ int main() {
     world.Load("world_seed_2.bin");
 
     int myUnitId;
-    for (const auto& [unitId, unit]: world.UnitsById) {
+    for (const auto& [unitId, unit]: world.UnitById) {
         if (unit.PlayerId == world.MyId) {
             myUnitId = unitId;
             break;
@@ -24,12 +24,12 @@ int main() {
     }
 
     for (int i = 0; i < emulationSteps; ++i) {
-        fout << world.UnitsById[myUnitId].Position << std::endl;
+        fout << world.UnitById[myUnitId].Position << std::endl;
 
         world.EmulateOrder(Emulator::TOrder{
             .UnitId = myUnitId,
             .TargetVelocity = Emulator::Vector2D{-1000, 0},
-            .TargetDirection = Emulator::Vector2D{world.UnitsById[myUnitId].Direction.y, -world.UnitsById[myUnitId].Direction.x},
+            .TargetDirection = Emulator::Vector2D{world.UnitById[myUnitId].Direction.y, -world.UnitById[myUnitId].Direction.x},
         });
     }
 }
