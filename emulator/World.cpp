@@ -81,10 +81,16 @@ TWorld TWorld::FormApi(const model::Game& game) {
         };
 
         if (auto weapon = dynamic_cast<model::Item::Weapon*>(loot.item.get())) {
+            if (weapon->typeIndex != 2) {
+                continue;
+            }
             newLoot.Item = Weapon;
             newLoot.WeaponType = weapon->typeIndex;
         }
         if (auto ammo = dynamic_cast<model::Item::Ammo*>(loot.item.get())) {
+            if (ammo->weaponTypeIndex != 2) {
+                continue;
+            }
             newLoot.Item = Ammo;
             newLoot.WeaponType = ammo->weaponTypeIndex;
             newLoot.Amount = ammo->amount;

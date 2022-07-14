@@ -17,6 +17,7 @@ public:
     void ForgetLoot(int lootId);
 private:
     std::unordered_map<int, TLoot> LootById;
+    std::unordered_map<int, TLoot> LootById2;
     std::unordered_map<int, TUnit> UnitById;
 };
 

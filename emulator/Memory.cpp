@@ -8,12 +8,17 @@ void TMemory::Update(const TWorld &world) {
     const auto constants = GetGlobalConstants();
     assert(constants);
 
-    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond) == 0) {
+    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 2) == 0) {
         LootById.clear();
+        return;
+    }
+    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 2) == GetGlobalConstants()->ticksPerSecond) {
+        LootById2.clear();
         return;
     }
     for (const auto& [_, loot]: world.LootById) {
         LootById.insert({loot.Id, loot});
+        LootById2.insert({loot.Id, loot});
     }
 
     for (auto& [_, unit]: world.UnitById) {
@@ -55,10 +60,15 @@ void TMemory::InjectKnowledge(TWorld &world) {
     for (const auto& [_, loot]: LootById) {
         world.LootById.insert({loot.Id, loot});
     }
+    for (const auto& [_, loot]: LootById2) {
+        world.LootById.insert({loot.Id, loot});
+    }
 
     for (const auto& [_, unit]: UnitById) {
         if (!world.UnitById.contains(unit.Id)) {
-            world.UnitById.insert({unit.Id, unit});
+            auto newUnit = unit;
+            newUnit.Imaginable = true;
+            world.UnitById.insert({unit.Id, newUnit});
         }
     }
 }
@@ -96,13 +106,14 @@ void TMemory::UpdateSoundKnowledge(TWorld& world, const TSound &sound) {
                 .Health = constants->unitHealth,
                 .Shield = constants->maxShield,
                 .Aim = 1,
-                .Weapon=2,
+                .Weapon = 2,
             }
         });
 }
 
 void TMemory::ForgetLoot(int lootId) {
     LootById.erase(lootId);
+    LootById2.erase(lootId);
 }
 
 }

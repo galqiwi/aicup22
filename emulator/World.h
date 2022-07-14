@@ -29,6 +29,8 @@ struct TUnit {
     int NextShotTick;
     std::vector<int> Ammo;
     int ShieldPotions;
+
+    bool Imaginable{false};
 };
 
 struct TOrder {

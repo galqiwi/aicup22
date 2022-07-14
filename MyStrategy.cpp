@@ -76,6 +76,9 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 //    for (const auto& [_, unitToDraw]: world.UnitById) {
 //        debugInterface->addCircle(unitToDraw.Position.ToApi(), 0.6, debugging::Color(0, 1, 1, 1));
 //    }
+//    for (const auto& [_, loot]: world.LootById) {
+//        debugInterface->addCircle(loot.Position.ToApi(), 0.6, debugging::Color(1, 0, 1, 1));
+//    }
 
     auto order = bestStrategy.GetOrder(world, unit.id);
 

@@ -38,11 +38,11 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
             }
         }
 
-        if (abs(loot.Position - world.Zone.currentCenter) > world.Zone.currentRadius - 30) {
-            continue;
-        }
+//        if (abs(loot.Position - world.Zone.currentCenter) > world.Zone.currentRadius - 30) {
+//            continue;
+//        }
 
-        auto dist2 = abs(loot.Position - unit.Position);
+        auto dist2 = abs2(loot.Position - unit.Position);
         if (!minDist2 || dist2 < minDist2) {
             minDist2 = dist2;
             output = loot.Id;

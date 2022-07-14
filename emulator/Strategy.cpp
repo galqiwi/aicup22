@@ -97,6 +97,9 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
         std::optional<double> closestDist2;
         int closestUnitId;
         for (const auto& [_, otherUnit]: world.UnitById) {
+            if (otherUnit.Imaginable) {
+                continue;
+            }
             if (otherUnit.PlayerId == world.MyId) {
                 continue;
             }
