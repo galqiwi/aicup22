@@ -93,7 +93,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
     // TODO: support multiple players
-    if (world.UnitById.size() > 1) {
+    if (world.UnitById.size() > 1 && unit.Weapon == 4 && unit.Shield > 0 && unit.Ammo[2] > 0) {
         std::optional<double> closestDist2;
         int closestUnitId;
         for (const auto& [_, otherUnit]: world.UnitById) {

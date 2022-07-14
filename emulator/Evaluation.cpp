@@ -68,7 +68,7 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
             }
 
         }
-        if (minDist) {
+        if (minDist && unit.Weapon == 4 && unit.Shield > 0 && unit.Ammo[2] > 0) {
             combatSafety += (unit.Health + unit.Shield) * ((combatRadius - *minDist) / combatRadius);
         }
         get<1>(score).value = -combatSafety;
