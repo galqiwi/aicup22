@@ -1,5 +1,31 @@
-#ifndef __KDTREE_H__
-#define __KDTREE_H__
+/*
+MIT License
+
+Copyright (c) 2017 gishi523
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+*/
+
+#include "ClosestPointIndex.h"
+#include "Vector2D.h"
+#include "World.h"
 
 #include <algorithm>
 #include <cmath>
@@ -9,6 +35,8 @@
 #include <numeric>
 #include <vector>
 
+
+// from https://github.com/gishi523/kd-tree
 namespace kdt
 {
 /** @brief k-d tree class.
@@ -302,26 +330,47 @@ private:
 };
 } // kdt
 
-#endif // !__KDTREE_H__
+namespace Emulator {
 
-using point = std::array<double, 2>;
-
-class MyPoint : public std::array<double, 2>
+struct kdTreeVector2D
+    : public std::array<double, 2>
 {
 public:
-
-    // dimension of the Point
     static const int DIM = 2;
-
-    // As you want
-    // ...
 };
 
+struct TClosestLootIndex
+    : public IClosestPointIndex {
+    TClosestLootIndex(const std::vector<kdTreeVector2D>& points, std::vector<int> ids)
+        : KdTree(points)
+        , Ids(std::move(ids)) {
+    }
 
-int main() {
-    std::vector<MyPoint> points;// = {{0, 0}, {1, 1}};
-    kdt::KDTree<MyPoint> kdTree(points);
-    int k = 1;
-    std::vector<int> indices = kdTree.knnSearch({{2, 2}}, k);
-    std::cout << indices[0] << std::endl;
+    std::optional<int> ClosestPointId(Vector2D point) override {
+        auto index = KdTree.knnSearch({point.x, point.y}, 1);
+        if (index.empty()) {
+            return std::nullopt;
+        }
+        return Ids[index[0]];
+    }
+
+    kdt::KDTree<kdTreeVector2D> KdTree;
+    std::vector<int> Ids;
+};
+
+IClosestPointIndexPtr CreateClosestLootIndex(const std::unordered_map<ELootItem, std::vector<TLoot>>& loot, ELootItem item) {
+    std::vector<kdTreeVector2D> points;
+    std::vector<int> ids;
+    points.reserve(loot.size());
+    ids.reserve(loot.size());
+
+    for (const auto& lootElement: loot.find(item)->second) {
+        points.push_back({lootElement.Position.x, lootElement.Position.y});
+        ids.push_back(lootElement.Id);
+    }
+
+    return std::make_shared<TClosestLootIndex>(points, std::move(ids));
+
+}
+
 }

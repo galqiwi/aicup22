@@ -346,14 +346,18 @@ void TWorld::Load(const char *filename) {
     }
 }
 void TWorld::UpdateLootIndex() {
-    LootByItemIndex.clear();
+    LootByItem.clear();
     for (auto& [_, loot]: LootById) {
-        LootByItemIndex[loot.Item].push_back(loot);
+        LootByItem[loot.Item].push_back(loot);
     }
     // initialisation
-    LootByItemIndex[Weapon];
-    LootByItemIndex[ShieldPotions];
-    LootByItemIndex[Ammo];
+    LootByItem[Weapon];
+    LootByItem[ShieldPotions];
+    LootByItem[Ammo];
+
+    for (auto& [ItemType, _]: LootByItem) {
+        LootIndexByItem[ItemType] = CreateClosestLootIndex(LootByItem, ItemType);
+    }
 }
 
 double TUnit::GetCombatRadius() const {

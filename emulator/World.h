@@ -3,6 +3,7 @@
 #include "public.h"
 #include "Vector2D.h"
 #include "Constants.h"
+#include "ClosestPointIndex.h"
 
 #include "model/Game.hpp"
 #include "model/UnitOrder.hpp"
@@ -65,12 +66,6 @@ struct TProjectile {
     double LifeTime;
 };
 
-enum ELootItem {
-    Weapon = 0,
-    ShieldPotions = 1,
-    Ammo = 2,
-};
-
 struct TLoot {
     int Id;
     Vector2D Position;
@@ -101,7 +96,9 @@ public:
     TZone Zone;
     std::unordered_map<int, TProjectile> ProjectileById;
     std::unordered_map<int, TLoot> LootById;
-    std::unordered_map<int, std::vector<TLoot>> LootByItemIndex;
+    std::unordered_map<ELootItem, std::vector<TLoot>> LootByItem;
+    std::unordered_map<ELootItem, IClosestPointIndexPtr> LootIndexByItem;
+
     TState State;
 
     void PrepareEmulation();

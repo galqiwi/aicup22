@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 namespace Emulator {
 
 struct TUnit;
@@ -25,5 +27,15 @@ struct TMemory;
 struct TLoot;
 
 struct TState;
+
+struct IClosestPointIndex;
+
+using IClosestPointIndexPtr = std::shared_ptr<IClosestPointIndex>;
+
+enum ELootItem {
+    Weapon = 0,
+    ShieldPotions = 1,
+    Ammo = 2,
+};
 
 }
