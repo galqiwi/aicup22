@@ -31,6 +31,8 @@ struct TUnit {
     int ShieldPotions;
 
     bool Imaginable{false};
+
+    double GetCombatRadius() const;
 };
 
 struct TOrder {
@@ -41,7 +43,7 @@ struct TOrder {
     bool Pickup{false};
     int LootId{-1};
     bool UseShieldPotion{false};
-    bool IsRotation{false};
+    bool IsRotationStart{false};
 
     [[nodiscard]] model::UnitOrder ToApi() const;
 };
@@ -63,7 +65,7 @@ struct TProjectile {
     double LifeTime;
 };
 
-enum TLootItem {
+enum ELootItem {
     Weapon = 0,
     ShieldPotions = 1,
     Ammo = 2,
@@ -72,9 +74,17 @@ enum TLootItem {
 struct TLoot {
     int Id;
     Vector2D Position;
-    TLootItem Item;
+    ELootItem Item;
     int WeaponType;
     int Amount;
+};
+
+struct TState {
+    void Update(const TWorld& world, const TOrder& order);
+
+    // TODO: by Id
+    int LastRotationTick{0};
+
 };
 
 class TWorld {
@@ -91,13 +101,13 @@ public:
     TZone Zone;
     std::unordered_map<int, TProjectile> ProjectileById;
     std::unordered_map<int, TLoot> LootById;
-
-    // TODO: support multiple players
-    int LastRotationId{std::numeric_limits<int>::min()};
+    std::unordered_map<int, std::vector<TLoot>> LootByItemIndex;
+    TState State;
 
     void PrepareEmulation();
     void EmulateOrder(const TOrder& order);
     void Tick();
+    void UpdateLootIndex();
 private:
     Vector2D ClipVelocity(Vector2D velocity, const TUnit& unit);
     Vector2D ApplyAcceleration(Vector2D velocity, Vector2D targetVelocity);

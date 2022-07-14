@@ -60,18 +60,25 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
             }
 
             auto dist = abs(unit.Position - otherUnit.Position);
-            if (dist < combatRadius) {
-                combatSafety -= (otherUnit.Health + otherUnit.Shield) * ((combatRadius - dist) / combatRadius);
-                if (!minDist || dist < *minDist) {
-                    minDist = dist;
-                }
+            if (dist < otherUnit.GetCombatRadius()) {
+                combatSafety -= (otherUnit.Health + otherUnit.Shield + 1) * ((otherUnit.GetCombatRadius() - dist) / otherUnit.GetCombatRadius()) * ((otherUnit.GetCombatRadius() - dist) / otherUnit.GetCombatRadius());
             }
-
+            if (!minDist || dist < *minDist) {
+                minDist = dist;
+            }
         }
-        if (minDist && unit.Weapon == 4 && unit.Shield > 0 && unit.Ammo[2] > 0) {
-            combatSafety += (unit.Health + unit.Shield) * ((combatRadius - *minDist) / combatRadius);
+        if (minDist && *minDist < combatRadius && unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0) {
+            combatSafety += (unit.Health + unit.Shield) * ((combatRadius - *minDist) / combatRadius) * ((combatRadius - *minDist) / combatRadius);
         }
         get<1>(score).value = -combatSafety;
+
+        if (combatSafety >= 0 && !(unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0)) {
+            get<1>(score).value = std::nullopt;
+        }
+
+        if (combatSafety >= 0) {
+            get<1>(score).value = std::nullopt;
+        }
     }
 
 //    return score;
@@ -93,7 +100,9 @@ TScore EvaluateStrategy(const TStrategy &strategy, const TWorld& world, int unit
 
     while (currentWorld.CurrentTick < untilTick) {
         currentWorld.PrepareEmulation();
-        currentWorld.EmulateOrder(strategy.GetOrder(currentWorld, unitId));
+        auto order = strategy.GetOrder(currentWorld, unitId);
+        currentWorld.EmulateOrder(order);
+        currentWorld.State.Update(currentWorld, order);
         currentWorld.Tick();
 
         score = score + EvaluateWorld(world, unit);

@@ -24,4 +24,6 @@ struct TMemory;
 
 struct TLoot;
 
+struct TState;
+
 }

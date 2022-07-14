@@ -46,15 +46,24 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     }
 
     memory.InjectKnowledge(world);
+    world.UpdateLootIndex();
 
     std::optional<Emulator::TScore> bestScore = std::nullopt;
     Emulator::TStrategy bestStrategy;
 
+    if (world.CurrentTick > 11860) {
+        bestStrategy = bestStrategies[0];
+    }
+
     for (int i = 0; i < nStrategies; ++i) {
+        if (world.CurrentTick > 11860) {
+            break;
+        }
         Emulator::TStrategy strategy;
 
         if (i < bestStrategies.size()) {
-            strategy = std::move(bestStrategies[i]);
+            strategy = bestStrategies[i];
+//            strategy = std::move(bestStrategies[i]);
         } else {
             strategy = Emulator::GenerateRandomStrategy(world.CurrentTick, actionDuration, nActions);
         }
@@ -70,27 +79,36 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 //    for (const auto& sound: game.sounds) {
 //        debugInterface->addCircle(sound.position, 0.25, debugging::Color(1, 0, 1, 1));
 //    }
-//    debugInterface->addCircle(GetTarget(world, unit.id).ToApi(), 0.25, debugging::Color(1, 0, 1, 1));
+//    Emulator::EvaluateStrategy(bestStrategies[0], world, unit.id, world.CurrentTick + nActions * actionDuration);
+//    if (!bestStrategies.empty()) {
+//        Emulator::VisualiseStrategy(bestStrategies[0], world, unit.id, world.CurrentTick + nActions * actionDuration);
+//    }
+//
 //    Emulator::VisualiseStrategy(bestStrategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
-//    debugInterface->addPlacedText(unit.position, std::to_string(*bestScore), model::Vec2{1, 0}, 2, debugging::Color{0, 0, 0, 1});
+//    debugInterface->addPlacedText(unit.position, std::to_string(std::get<0>(*bestScore)), model::Vec2{1, 0}, 2, debugging::Color{0, 0, 0, 1});
 //    for (const auto& [_, unitToDraw]: world.UnitById) {
 //        debugInterface->addCircle(unitToDraw.Position.ToApi(), 0.6, debugging::Color(0, 1, 1, 1));
 //    }
+//    debugInterface->addCircle(GetTarget(world, unit.id).ToApi(), 0.25, debugging::Color(1, 0, 1, 1));
 //    for (const auto& [_, loot]: world.LootById) {
 //        debugInterface->addCircle(loot.Position.ToApi(), 0.6, debugging::Color(1, 0, 1, 1));
 //    }
 
     auto order = bestStrategy.GetOrder(world, unit.id);
 
+    auto newState = world.State;
+    newState.Update(world, order);
+    memory.RememberState(newState);
+
     if (order.Pickup) {
         memory.ForgetLoot(order.LootId);
     }
 
     bestStrategies.resize(0);
+    bestStrategies.push_back(bestStrategy);
     for (int i = 0; i < nMutations; ++i) {
         bestStrategies.push_back(bestStrategy.Mutate());
     }
-    bestStrategies.push_back(std::move(bestStrategy));
 
     return order.ToApi();
 }

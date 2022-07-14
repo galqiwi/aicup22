@@ -8,11 +8,11 @@ void TMemory::Update(const TWorld &world) {
     const auto constants = GetGlobalConstants();
     assert(constants);
 
-    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 2) == 0) {
+    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 8) == 4) {
         LootById.clear();
         return;
     }
-    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 2) == GetGlobalConstants()->ticksPerSecond) {
+    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 8) == GetGlobalConstants()->ticksPerSecond * 4) {
         LootById2.clear();
         return;
     }
@@ -71,6 +71,8 @@ void TMemory::InjectKnowledge(TWorld &world) {
             world.UnitById.insert({unit.Id, newUnit});
         }
     }
+
+    world.State = State;
 }
 
 void TMemory::UpdateSoundKnowledge(TWorld& world, const TSound &sound) {
@@ -114,6 +116,10 @@ void TMemory::UpdateSoundKnowledge(TWorld& world, const TSound &sound) {
 void TMemory::ForgetLoot(int lootId) {
     LootById.erase(lootId);
     LootById2.erase(lootId);
+}
+
+void TMemory::RememberState(const TState &state) {
+    State = state;
 }
 
 }

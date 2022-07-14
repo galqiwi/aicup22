@@ -65,6 +65,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
     int currentActionId = -1;
     int actionStartTick = StartTick;
     auto constants = GetGlobalConstants();
+    assert(constants);
 
     for (int i = 0; i < Actions.size(); ++i) {
         auto& action = Actions[i];
@@ -88,12 +89,12 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
 
     const auto& unit = world.UnitById.find(unitId)->second;
 
-
-    bool isRotation = true;//(world.CurrentTick - world.LastRotationId < constants->ticksPerSecond * 4);
+    bool isRotationStart = (world.CurrentTick - world.State.LastRotationTick >= constants->ticksPerSecond * 2);
+    bool isRotation = isRotationStart || (world.CurrentTick - world.State.LastRotationTick < constants->ticksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
     // TODO: support multiple players
-    if (world.UnitById.size() > 1 && unit.Weapon == 4 && unit.Shield > 0 && unit.Ammo[2] > 0) {
+    if (world.UnitById.size() > 1 && unit.Weapon == 2 && unit.Ammo[2] > 0) {
         std::optional<double> closestDist2;
         int closestUnitId;
         for (const auto& [_, otherUnit]: world.UnitById) {
@@ -111,13 +112,13 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
             }
         }
         if (closestDist2) {
-            if (*closestDist2 > 1600 && isRotation) {
+            if (*closestDist2 > world.UnitById.find(closestUnitId)->second.GetCombatRadius() * world.UnitById.find(closestUnitId)->second.GetCombatRadius() && isRotation) {
                 return {
                     .UnitId = unitId,
                     .TargetVelocity = action.Speed,
                     .TargetDirection = rotationDirection,
                     .Shoot = true,
-                    .IsRotation = true,
+                    .IsRotationStart = isRotationStart,
                 };
             }
             return {
@@ -139,7 +140,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
             .TargetDirection = isRotation ? rotationDirection:unit.Direction,
             .Pickup = lootId.has_value(),
             .LootId = (lootId.has_value() ? *lootId:0),
-            .IsRotation = isRotation,
+            .IsRotationStart = isRotationStart,
         };
     }
 
@@ -151,7 +152,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
         .TargetVelocity = action.Speed,
         .TargetDirection = isRotation ? rotationDirection: targetDirection,
         .UseShieldPotion = (unit.ShieldPotions > 0),
-        .IsRotation = isRotation,
+        .IsRotationStart = isRotationStart,
     };
 }
 

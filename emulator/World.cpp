@@ -25,6 +25,13 @@ model::UnitOrder TOrder::ToApi() const {
     return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::nullopt};
 }
 
+void TState::Update(const TWorld& world, const TOrder& order) {
+    if (order.IsRotationStart) {
+        LastRotationTick = world.CurrentTick;
+    }
+
+}
+
 TWorld TWorld::FormApi(const model::Game& game) {
     TWorld output;
     for (const auto& unit: game.units) {
@@ -131,10 +138,6 @@ void TWorld::EmulateOrder(const TOrder &order) {
     MoveCollidingUnit(unit, velocity);
 
     RotateUnit(unit, order.TargetDirection);
-
-    if (order.IsRotation) {
-        LastRotationId = CurrentTick;
-    }
 }
 
 void TWorld::RotateUnit(TUnit &unit, Vector2D targetDirection) {
@@ -163,6 +166,11 @@ Vector2D TWorld::ClipVelocity(Vector2D velocity, const TUnit &unit) {
     auto projection = (norm(unit.Direction) * norm(velocity)) * (Constants_->maxUnitForwardSpeed - Constants_->maxUnitBackwardSpeed) / 2;
 
     auto limit = sqrt(projection * projection + Constants_->maxUnitBackwardSpeed * Constants_->maxUnitForwardSpeed) + projection;
+
+    if (unit.Weapon) {
+        // TODO: better aim simulation
+        limit *= (1 - (1 - Constants_->weapons[*unit.Weapon].aimMovementSpeedModifier) * unit.Aim);
+    }
 
     if (abs(velocity) < limit) {
         return velocity;
@@ -239,7 +247,7 @@ void TWorld::PrepareEmulation() {
 
         for (auto& [unitId, unit]: UnitById) {
             // TODO: microticks or other stuff
-            if (SegmentIntersectsCircle(projectile.Position, newPosition, unit.Position, Constants_->unitRadius)) {
+            if (SegmentIntersectsCircle(projectile.Position, projectile.Position + (projectile.Velocity - unit.Velocity) / Constants_->ticksPerSecond, unit.Position, Constants_->unitRadius)) {
                 unit.Health -= Constants_->weapons[projectile.WeaponTypeIndex].projectileDamage;
                 idsToErase.push_back(projectile.Id);
                 break;
@@ -336,6 +344,27 @@ void TWorld::Load(const char *filename) {
         fin >> unit.Velocity;
         UnitById[unit.PlayerId] = unit;
     }
+}
+void TWorld::UpdateLootIndex() {
+    LootByItemIndex.clear();
+    for (auto& [_, loot]: LootById) {
+        LootByItemIndex[loot.Item].push_back(loot);
+    }
+    // initialisation
+    LootByItemIndex[Weapon];
+    LootByItemIndex[ShieldPotions];
+    LootByItemIndex[Ammo];
+}
+
+double TUnit::GetCombatRadius() const {
+    static auto constants = GetGlobalConstants();
+    assert(constants);
+
+    if (!Weapon) {
+        return 0;
+    }
+    const auto& weaponProperties = constants->weapons[*Weapon];
+    return weaponProperties.projectileSpeed * weaponProperties.projectileLifeTime;
 }
 
 }
