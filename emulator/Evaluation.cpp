@@ -43,6 +43,14 @@ TScore operator+(TScore a, TScore b) {
     };
 }
 
+double AmmoCoefficient(int ammo) {
+    int enoughToKill = 10;
+    if (ammo >= enoughToKill) {
+        return 1;
+    }
+    return ((double) ammo) / ((double)enoughToKill);
+}
+
 TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
     static auto constants = GetGlobalConstants();
 
@@ -68,7 +76,7 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
             }
         }
         if (minDist && *minDist < combatRadius && unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0) {
-            combatSafety += (unit.Health + unit.Shield) * ((combatRadius - *minDist) / combatRadius) * ((combatRadius - *minDist) / combatRadius);
+            combatSafety += (unit.Health + unit.Shield) * ((combatRadius - *minDist) / combatRadius) * ((combatRadius - *minDist) / combatRadius) * AmmoCoefficient(unit.Ammo[2]);
         }
         get<1>(score).value = -combatSafety;
 
