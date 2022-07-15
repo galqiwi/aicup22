@@ -1,5 +1,6 @@
 #include "Constants.h"
 
+#include <cassert>
 #include <memory>
 
 namespace Emulator {
@@ -242,6 +243,48 @@ std::optional<int> TObstacleMeta::GetObstacle(Vector2D point) {
         }
     }
     return std::nullopt;
+}
+
+void TObstacleMeta::UpdateObstaclesInPoint(Vector2D p, std::unordered_set<int>& obstacles) {
+    for (auto id: GetIntersectingIds(p)) {
+        obstacles.insert(id);
+    }
+}
+
+void TObstacleMeta::UpdateProbableIntersectingObstacles(Vector2D p1, Vector2D p2, std::unordered_set<int>& obstacles) {
+    auto c1 = ToCellId(p1);
+    auto c2 = ToCellId(p2);
+    Vector2D m = (p1 + p2) / 2;
+    auto cm = ToCellId(m);
+
+    if (c1 != cm && cm != c2) {
+        UpdateObstaclesInPoint(m, obstacles);
+    }
+
+    if (c1 != cm) {
+        UpdateProbableIntersectingObstacles(p1, m, obstacles);
+    }
+    if (cm != c2) {
+        UpdateProbableIntersectingObstacles(m, p2, obstacles);
+    }
+}
+
+bool TObstacleMeta::SegmentIntersectsObstacle(Vector2D p1, Vector2D p2) {
+    auto constants = GetGlobalConstants();
+    assert(constants);
+    std::unordered_set<int> obstacles;
+    UpdateObstaclesInPoint(p1, obstacles);
+    UpdateObstaclesInPoint(p2, obstacles);
+    UpdateProbableIntersectingObstacles(p1, p2, obstacles);
+
+    for(auto obstacleId: obstacles) {
+        auto& obstacle = constants->obstacles[obstacleId];
+        if (SegmentIntersectsCircle(p1, p2, obstacle.Center, obstacle.Radius)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 }

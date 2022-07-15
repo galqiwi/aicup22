@@ -51,6 +51,8 @@ Vector2D GetTarget(const TWorld &world, std::optional<int> loot) {
     if (loot) {
         return world.LootById.find(*loot)->second.Position;
     } else {
+        auto angle = world.State.spiralAngle;
+//        return world.Zone.nextCenter + Vector2D{cos(angle), sin(angle)} * (0.75 * world.Zone.nextRadius);
         return world.Zone.nextCenter;
     }
 }

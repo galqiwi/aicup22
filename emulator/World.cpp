@@ -26,10 +26,13 @@ model::UnitOrder TOrder::ToApi() const {
 }
 
 void TState::Update(const TWorld& world, const TOrder& order) {
+    auto constants = GetGlobalConstants();
+    assert(constants);
+
     if (order.IsRotationStart) {
         LastRotationTick = world.CurrentTick;
     }
-
+    spiralAngle += (constants->maxUnitForwardSpeed / constants->ticksPerSecond) / (0.75 * world.Zone.nextRadius);
 }
 
 TWorld TWorld::FormApi(const model::Game& game) {

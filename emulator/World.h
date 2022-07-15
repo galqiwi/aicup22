@@ -82,9 +82,10 @@ struct TLoot {
 struct TState {
     void Update(const TWorld& world, const TOrder& order);
 
+    double spiralAngle{0};
+
     // TODO: by Id
     int LastRotationTick{0};
-
 };
 
 class TWorld {

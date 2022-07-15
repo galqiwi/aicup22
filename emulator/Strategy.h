@@ -25,6 +25,8 @@ struct TStrategy {
 
 TStrategy GenerateRandomStrategy(int startTick, int actionDuration, int nActions);
 
+TStrategy GenerateRunaway(Vector2D direction);
+
 void VisualiseStrategy(const TStrategy& strategy, const TWorld &world, int unitId, int untilTick);
 
 }

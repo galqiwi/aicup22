@@ -171,8 +171,6 @@ void VisualiseStrategy(const TStrategy& strategy, const TWorld &world, int unitI
     std::vector<model::Vec2> line;
     line.reserve(untilTick - currentWorld.CurrentTick);
 
-    auto foo = currentWorld.ProjectileById.size();
-
     while (currentWorld.CurrentTick < untilTick) {
         currentWorld.PrepareEmulation();
         currentWorld.EmulateOrder(strategy.GetOrder(currentWorld, unitId));
@@ -197,6 +195,19 @@ void VisualiseStrategy(const TStrategy& strategy, const TWorld &world, int unitI
 
     assert(GetGlobalDebugInterface());
 //    GetGlobalDebugInterface()->addPolyLine(std::move(line), 0.15, debugging::Color(1, 0, 0, 1));
+}
+
+TStrategy GenerateRunaway(Vector2D direction) {
+    auto constants = GetGlobalConstants();
+    assert(constants);
+
+    return {
+        .StartTick = 0,
+        .Actions = {TStrategyAction{
+            .Speed = norm(direction) * constants->maxUnitForwardSpeed,
+            .ActionDuration = 1,
+        }},
+    };
 }
 
 }

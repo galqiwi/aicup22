@@ -53,6 +53,10 @@ inline Vector2D norm(Vector2D a) {
     return a / abs(a);
 }
 
+inline Vector2D rot90(Vector2D a) {
+    return {a.y, -a.x};
+}
+
 std::ostream& operator<<(std::ostream& out, const Vector2D& v);
 
 std::istream& operator>>(std::istream& in, Vector2D& v);

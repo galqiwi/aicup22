@@ -55,7 +55,12 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         bestStrategy = bestStrategies[0];
     }
 
-    for (int i = 0; i < nStrategies; ++i) {
+    std::vector<int> projectileIds;
+    for (const auto& [projectileId, _]: world.ProjectileById) {
+        projectileIds.push_back(projectileId);
+    }
+
+    for (int i = 0; i < nStrategies + world.ProjectileById.size() * 2; ++i) {
         if (world.CurrentTick > 11860) {
             break;
         }
@@ -65,7 +70,17 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
             strategy = bestStrategies[i];
 //            strategy = std::move(bestStrategies[i]);
         } else {
-            strategy = Emulator::GenerateRandomStrategy(world.CurrentTick, actionDuration, nActions);
+            if (i < nStrategies) {
+                strategy = Emulator::GenerateRandomStrategy(world.CurrentTick, actionDuration, nActions);
+            } else {
+                int projectileId = projectileIds[(i - nStrategies) / 2];
+                auto& projectile = world.ProjectileById[projectileId];
+                auto direction = Emulator::rot90(projectile.Velocity);
+                if (i % 2 == 0) {
+                    direction = Emulator::Vector2D{0, 0} - direction;
+                }
+                strategy = Emulator::GenerateRunaway(direction);
+            }
         }
         auto score = Emulator::EvaluateStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
 //        Emulator::VisualiseStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
