@@ -75,12 +75,12 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
                 minDist = dist;
             }
         }
-        if (minDist && *minDist < combatRadius && unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0) {
+        if (minDist && *minDist < combatRadius && unit.Weapon == 2 && unit.Ammo[2] > 0) {
             combatSafety += (unit.Health + unit.Shield) * ((combatRadius - *minDist) / combatRadius) * ((combatRadius - *minDist) / combatRadius) * AmmoCoefficient(unit.Ammo[2]);
         }
         get<1>(score).value = -combatSafety;
 
-        if (combatSafety >= 0 && !(unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0)) {
+        if (combatSafety >= 0 && !(unit.Weapon == 2 && unit.Ammo[2] > 0)) {
             get<1>(score).value = std::nullopt;
         }
 
