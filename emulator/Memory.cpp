@@ -8,6 +8,26 @@ void TMemory::Update(const TWorld &world) {
     const auto constants = GetGlobalConstants();
     assert(constants);
 
+    {
+        std::vector<int> idsToErase;
+        for (auto& [id, projectile]: ProjectileById) {
+            if (world.ProjectileById.contains(id)) {
+                continue;
+            }
+            projectile.Position = projectile.Position + projectile.Velocity / constants->ticksPerSecond;
+            projectile.LifeTime -= 1 / constants->ticksPerSecond;
+            if (projectile.LifeTime < 0) {
+                idsToErase.push_back(id);
+            }
+        }
+        for (auto& id: idsToErase) {
+            ProjectileById.erase(id);
+        }
+        for (auto& [id, projectile]: world.ProjectileById) {
+            ProjectileById[id] = projectile;
+        }
+    }
+
     if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 8) == 4) {
         LootById.clear();
         return;
@@ -57,6 +77,12 @@ void TMemory::Update(const TWorld &world) {
 }
 
 void TMemory::InjectKnowledge(TWorld &world) {
+    for (const auto& [id, projectile]: ProjectileById) {
+        if (!world.ProjectileById.contains(id)) {
+            world.ProjectileById[id] = projectile;
+        }
+    }
+
     for (const auto& [_, loot]: LootById) {
         world.LootById.insert({loot.Id, loot});
     }
