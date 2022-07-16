@@ -84,9 +84,9 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
             get<1>(score).value = std::nullopt;
         }
 
-        if (combatSafety >= 0 && world.CurrentTick < 60 * constants->ticksPerSecond / constants->zoneSpeed) {
-            get<1>(score).value = std::nullopt;
-        }
+//        if (combatSafety >= 0 && world.CurrentTick < 60 * constants->ticksPerSecond / constants->zoneSpeed) {
+//            get<1>(score).value = std::nullopt;
+//        }
     }
 
 //    return score;
