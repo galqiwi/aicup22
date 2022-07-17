@@ -119,12 +119,17 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
             auto actionRadius = std::max(otherUnit.GetCombatRadius(), unit.GetCombatRadius());
 
             if (*closestDist2 < actionRadius * actionRadius) {
+                bool shoot = !constants->obstaclesMeta.SegmentIntersectsObstacle(unit.Position, otherUnit.Position);
+                if (otherUnit.RemainingSpawnTime > 0) {
+                    shoot = false;
+                }
+
                 return {
                     .UnitId = unitId,
                     .TargetVelocity = action.Speed,
                     .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second),
                     .Aim = true,
-                    .Shoot = !constants->obstaclesMeta.SegmentIntersectsObstacle(unit.Position, otherUnit.Position),
+                    .Shoot = shoot,
                 };
             }
         }
