@@ -10,8 +10,8 @@
 namespace Emulator {
 
 model::UnitOrder TOrder::ToApi() const {
-    if (Shoot) {
-        return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::make_shared<model::ActionOrder::Aim>(true)};
+    if (Aim || Shoot) {
+        return {TargetVelocity.ToApi(), TargetDirection.ToApi(), std::make_shared<model::ActionOrder::Aim>(Shoot)};
     }
 
     if (Pickup) {

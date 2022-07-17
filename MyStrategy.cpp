@@ -110,6 +110,15 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 //        debugInterface->addCircle(loot.Position.ToApi(), 0.6, debugging::Color(1, 0, 1, 1));
 //    }
 
+//    for (const auto& [_, otherUnit]: world.UnitById) {
+//        auto color = debugging::Color(0, 1, 0, 1);
+//        if (Emulator::GetGlobalConstants()->obstaclesMeta.SegmentIntersectsObstacle(otherUnit.Position, Emulator::Vector2D::FromApi(unit.position))) {
+//            color = debugging::Color(1, 0, 0, 1);
+//        }
+//        debugInterface->addPolyLine({unit.position, otherUnit.Position.ToApi()}, 0.1, color);
+//    }
+
+
     auto order = bestStrategy.GetOrder(world, unit.id);
 
     auto newState = world.StateByUnitId[unit.id];

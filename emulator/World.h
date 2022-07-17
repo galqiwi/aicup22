@@ -39,6 +39,7 @@ struct TOrder {
     int UnitId;
     Vector2D TargetVelocity;
     Vector2D TargetDirection;
+    bool Aim{false};
     bool Shoot{false};
     bool Pickup{false};
     int LootId{-1};

@@ -245,43 +245,65 @@ std::optional<int> TObstacleMeta::GetObstacle(Vector2D point) {
     return std::nullopt;
 }
 
-void TObstacleMeta::UpdateObstaclesInPoint(Vector2D p, std::unordered_set<int>& obstacles) {
+bool TObstacleMeta::SegmentIntersectsObstacleNearPoint(Vector2D p1, Vector2D p2, Vector2D p, std::unordered_set<int>& obstacles) {
+    auto constants = GetGlobalConstants();
+    assert(constants);
+
     for (auto id: GetIntersectingIds(p)) {
+        if (obstacles.contains(id)) {
+            continue;
+        }
         obstacles.insert(id);
+        auto& obstacle = constants->obstacles[id];
+        if (obstacle.CanShootThrough) {
+            continue;
+        }
+        if (SegmentIntersectsCircle(p1, p2, obstacle.Center, obstacle.Radius)) {
+            return true;
+        }
     }
+    return false;
 }
 
-void TObstacleMeta::UpdateProbableIntersectingObstacles(Vector2D p1, Vector2D p2, std::unordered_set<int>& obstacles) {
+bool TObstacleMeta::SubSegmentIntersectsObstacle(Vector2D p1, Vector2D p2, std::unordered_set<int>& obstacles) {
     auto c1 = ToCellId(p1);
     auto c2 = ToCellId(p2);
     Vector2D m = (p1 + p2) / 2;
     auto cm = ToCellId(m);
 
     if (c1 != cm && cm != c2) {
-        UpdateObstaclesInPoint(m, obstacles);
+        if (SegmentIntersectsObstacleNearPoint(p1, p2, m, obstacles)) {
+            return true;
+        }
     }
 
-    if (c1 != cm) {
-        UpdateProbableIntersectingObstacles(p1, m, obstacles);
+    if (c1 == cm || cm == c2) {
+        return false;
     }
-    if (cm != c2) {
-        UpdateProbableIntersectingObstacles(m, p2, obstacles);
+
+    if (SubSegmentIntersectsObstacle(p1, m, obstacles)) {
+        return true;
     }
+    if (SubSegmentIntersectsObstacle(m, p2, obstacles)) {
+        return true;
+    }
+
+    return false;
 }
 
 bool TObstacleMeta::SegmentIntersectsObstacle(Vector2D p1, Vector2D p2) {
     auto constants = GetGlobalConstants();
     assert(constants);
     std::unordered_set<int> obstacles;
-    UpdateObstaclesInPoint(p1, obstacles);
-    UpdateObstaclesInPoint(p2, obstacles);
-    UpdateProbableIntersectingObstacles(p1, p2, obstacles);
 
-    for(auto obstacleId: obstacles) {
-        auto& obstacle = constants->obstacles[obstacleId];
-        if (SegmentIntersectsCircle(p1, p2, obstacle.Center, obstacle.Radius)) {
-            return true;
-        }
+    if (SegmentIntersectsObstacleNearPoint(p1, p2, p1, obstacles)) {
+        return true;
+    }
+    if (SegmentIntersectsObstacleNearPoint(p1, p2, p2, obstacles)) {
+        return true;
+    }
+    if (SubSegmentIntersectsObstacle(p1, p2, obstacles)) {
+        return true;
     }
 
     return false;

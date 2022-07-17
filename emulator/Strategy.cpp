@@ -123,7 +123,8 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
                     .UnitId = unitId,
                     .TargetVelocity = action.Speed,
                     .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second),
-                    .Shoot = true,
+                    .Aim = true,
+                    .Shoot = !constants->obstaclesMeta.SegmentIntersectsObstacle(unit.Position, otherUnit.Position),
                 };
             }
         }

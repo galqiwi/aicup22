@@ -47,8 +47,8 @@ private:
     std::unordered_map<std::pair<int, int>, std::vector<int>, hash_pair> Index_;
     std::vector<int> EmptyList_;
 
-    void UpdateProbableIntersectingObstacles(Vector2D p1, Vector2D p2, std::unordered_set<int>& obstacles);
-    void UpdateObstaclesInPoint(Vector2D p, std::unordered_set<int>& obstacles);
+    bool SubSegmentIntersectsObstacle(Vector2D p1, Vector2D p2, std::unordered_set<int>& obstacles);
+    bool SegmentIntersectsObstacleNearPoint(Vector2D p1, Vector2D p2, Vector2D p, std::unordered_set<int>& obstacles);
 };
 
 struct TConstants {
