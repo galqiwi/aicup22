@@ -110,7 +110,7 @@ TScore EvaluateStrategy(const TStrategy &strategy, const TWorld& world, int unit
         currentWorld.PrepareEmulation();
         auto order = strategy.GetOrder(currentWorld, unitId);
         currentWorld.EmulateOrder(order);
-        currentWorld.State.Update(currentWorld, order);
+        currentWorld.StateByUnitId[unitId].Update(currentWorld, order);
         currentWorld.Tick();
 
         score = score + EvaluateWorld(world, unit);

@@ -84,7 +84,6 @@ struct TState {
 
     double spiralAngle{0};
 
-    // TODO: by Id
     int LastRotationTick{0};
 };
 
@@ -103,7 +102,7 @@ public:
     std::unordered_map<int, TProjectile> ProjectileById;
     std::unordered_map<int, TLoot> LootById;
     std::unordered_map<int, std::vector<TLoot>> LootByItemIndex;
-    TState State;
+    std::unordered_map<int, TState> StateByUnitId;
 
     void PrepareEmulation();
     void EmulateOrder(const TOrder& order);

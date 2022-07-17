@@ -13,7 +13,7 @@ struct TMemory {
 public:
     void Update(const TWorld& world);
     void UpdateSoundKnowledge(TWorld& world, const TSound& sound);
-    void RememberState(const TState& state);
+    void RememberState(int unitId, const TState& state);
     void InjectKnowledge(TWorld& world);
     void ForgetLoot(int lootId);
 private:
@@ -21,7 +21,8 @@ private:
     std::unordered_map<int, TLoot> LootById2;
     std::unordered_map<int, TUnit> UnitById;
     std::unordered_map<int, TProjectile> ProjectileById;
-    TState State;
+    std::unordered_map<int, TState> StateByUnitId;
+    int LastUpdateTick{-1};
 };
 
 }

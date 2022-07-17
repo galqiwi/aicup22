@@ -37,6 +37,7 @@ void TState::Update(const TWorld& world, const TOrder& order) {
 
 TWorld TWorld::FormApi(const model::Game& game) {
     TWorld output;
+
     for (const auto& unit: game.units) {
         output.UnitById[unit.id] = TUnit{
             .Id = unit.id,

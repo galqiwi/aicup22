@@ -47,17 +47,17 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
     return output;
 }
 
-Vector2D GetTarget(const TWorld &world, std::optional<int> loot) {
+Vector2D GetTarget(int unitId, const TWorld &world, std::optional<int> loot) {
     if (loot) {
         return world.LootById.find(*loot)->second.Position;
     } else {
-        auto angle = world.State.spiralAngle;
+        auto angle = world.StateByUnitId.find(unitId)->second.spiralAngle;
         return world.Zone.nextCenter + Vector2D{cos(angle), sin(angle)} * (0.75 * world.Zone.nextRadius);
     }
 }
 
 Vector2D GetTarget(const TWorld &world, int unitId) {
-    return GetTarget(world, GetTargetLoot(world, unitId));
+    return GetTarget(unitId, world, GetTargetLoot(world, unitId));
 }
 
 }

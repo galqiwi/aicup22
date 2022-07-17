@@ -29,8 +29,9 @@ model::Order MyStrategy::getOrder(const model::Game& game, DebugInterface* debug
 }
 
 model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterface* debugInterface, const model::Unit& unit) {
-    static std::vector<Emulator::TStrategy> bestStrategies;
+    static std::unordered_map<int, std::vector<Emulator::TStrategy>> bestStrategiesById;
     static Emulator::TMemory memory;
+    auto& bestStrategies = bestStrategiesById[unit.id];
 
     SetGlobalDebugInterface(debugInterface);
 
@@ -111,9 +112,9 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 
     auto order = bestStrategy.GetOrder(world, unit.id);
 
-    auto newState = world.State;
+    auto newState = world.StateByUnitId[unit.id];
     newState.Update(world, order);
-    memory.RememberState(newState);
+    memory.RememberState(unit.id, newState);
 
     if (order.Pickup) {
         memory.ForgetLoot(order.LootId);

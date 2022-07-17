@@ -89,8 +89,11 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
 
     const auto& unit = world.UnitById.find(unitId)->second;
 
-    bool isRotationStart = (world.CurrentTick - world.State.LastRotationTick >= constants->ticksPerSecond * 2);
-    bool isRotation = isRotationStart || (world.CurrentTick - world.State.LastRotationTick < constants->ticksPerSecond * 1);
+    assert(world.StateByUnitId.find(unitId) != world.StateByUnitId.end());
+    const auto& unitState = world.StateByUnitId.find(unitId)->second;
+
+    bool isRotationStart = (world.CurrentTick - unitState.LastRotationTick >= constants->ticksPerSecond * 2);
+    bool isRotation = isRotationStart || (world.CurrentTick - unitState.LastRotationTick < constants->ticksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
     // TODO: support multiple players
@@ -112,27 +115,23 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
             }
         }
         if (closestDist2) {
-            if (*closestDist2 > world.UnitById.find(closestUnitId)->second.GetCombatRadius() * world.UnitById.find(closestUnitId)->second.GetCombatRadius() && isRotation) {
+            const auto& otherUnit = world.UnitById.find(closestUnitId)->second;
+            auto actionRadius = std::max(otherUnit.GetCombatRadius(), unit.GetCombatRadius());
+
+            if (*closestDist2 < actionRadius * actionRadius) {
                 return {
                     .UnitId = unitId,
                     .TargetVelocity = action.Speed,
-                    .TargetDirection = rotationDirection,
+                    .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second),
                     .Shoot = true,
-                    .IsRotationStart = isRotationStart,
                 };
             }
-            return {
-                .UnitId = unitId,
-                .TargetVelocity = action.Speed,
-                .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second),
-                .Shoot = true,
-            };
         }
     }
 
     // pick loot if possible
     auto lootId = GetTargetLoot(world, unitId);
-    auto target = GetTarget(world, lootId);
+    auto target = GetTarget(unitId, world, lootId);
     if (abs(target - unit.Position) < constants->unitRadius) {
         return {
             .UnitId = unitId,

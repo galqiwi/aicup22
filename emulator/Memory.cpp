@@ -5,6 +5,11 @@ namespace Emulator {
 
 
 void TMemory::Update(const TWorld &world) {
+    if (LastUpdateTick >= world.CurrentTick) {
+        return;
+    }
+    LastUpdateTick = world.CurrentTick;
+
     const auto constants = GetGlobalConstants();
     assert(constants);
 
@@ -74,6 +79,13 @@ void TMemory::Update(const TWorld &world) {
         }
         unit.Position = unit.Position + unit.Velocity / constants->ticksPerSecond;
     }
+
+    for (auto& [id, unit]: world.UnitById) {
+        if (unit.PlayerId != world.MyId) {
+            continue;
+        }
+        StateByUnitId[id];
+    }
 }
 
 void TMemory::InjectKnowledge(TWorld &world) {
@@ -98,7 +110,7 @@ void TMemory::InjectKnowledge(TWorld &world) {
         }
     }
 
-    world.State = State;
+    world.StateByUnitId = StateByUnitId;
 }
 
 void TMemory::UpdateSoundKnowledge(TWorld& world, const TSound &sound) {
@@ -144,8 +156,8 @@ void TMemory::ForgetLoot(int lootId) {
     LootById2.erase(lootId);
 }
 
-void TMemory::RememberState(const TState &state) {
-    State = state;
+void TMemory::RememberState(int unitId, const TState &state) {
+    StateByUnitId[unitId] = state;
 }
 
 }
