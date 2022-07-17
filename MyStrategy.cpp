@@ -29,9 +29,9 @@ model::Order MyStrategy::getOrder(const model::Game& game, DebugInterface* debug
 }
 
 model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterface* debugInterface, const model::Unit& unit) {
-    static std::unordered_map<int, std::vector<Emulator::TStrategy>> bestStrategiesById;
+    static std::unordered_map<int, std::vector<Emulator::TStrategy>> forcedStrategiesById;
     static Emulator::TMemory memory;
-    auto& bestStrategies = bestStrategiesById[unit.id];
+    auto& forcedStrategies = forcedStrategiesById[unit.id];
 
     SetGlobalDebugInterface(debugInterface);
 
@@ -52,24 +52,19 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     std::optional<Emulator::TScore> bestScore = std::nullopt;
     Emulator::TStrategy bestStrategy;
 
-    if (world.CurrentTick > 11860) {
-        bestStrategy = bestStrategies[0];
-    }
-
     std::vector<int> projectileIds;
     for (const auto& [projectileId, _]: world.ProjectileById) {
         projectileIds.push_back(projectileId);
     }
-
+    
+    std::vector<Emulator::TStrategy> strategies;
+    
     for (int i = 0; i < nStrategies + world.ProjectileById.size() * 2; ++i) {
-        if (world.CurrentTick > 11860) {
-            break;
-        }
         Emulator::TStrategy strategy;
 
-        if (i < bestStrategies.size()) {
-            strategy = bestStrategies[i];
-//            strategy = std::move(bestStrategies[i]);
+        if (i < forcedStrategies.size()) {
+            strategy = forcedStrategies[i];
+//            strategy = std::move(forcedStrategies[i]);
         } else {
             if (i < nStrategies) {
                 strategy = Emulator::GenerateRandomStrategy(world.CurrentTick, actionDuration, nActions);
@@ -95,9 +90,9 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 //    for (const auto& sound: game.sounds) {
 //        debugInterface->addCircle(sound.position, 0.25, debugging::Color(1, 0, 1, 1));
 //    }
-//    Emulator::EvaluateStrategy(bestStrategies[0], world, unit.id, world.CurrentTick + nActions * actionDuration);
-//    if (!bestStrategies.empty()) {
-//        Emulator::VisualiseStrategy(bestStrategies[0], world, unit.id, world.CurrentTick + nActions * actionDuration);
+//    Emulator::EvaluateStrategy(forcedStrategies[0], world, unit.id, world.CurrentTick + nActions * actionDuration);
+//    if (!forcedStrategies.empty()) {
+//        Emulator::VisualiseStrategy(forcedStrategies[0], world, unit.id, world.CurrentTick + nActions * actionDuration);
 //    }
 //
 //    Emulator::VisualiseStrategy(bestStrategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
@@ -129,10 +124,10 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         memory.ForgetLoot(order.LootId);
     }
 
-    bestStrategies.resize(0);
-    bestStrategies.push_back(bestStrategy);
+    forcedStrategies.resize(0);
+    forcedStrategies.push_back(bestStrategy);
     for (int i = 0; i < nMutations; ++i) {
-        bestStrategies.push_back(bestStrategy.Mutate());
+        forcedStrategies.push_back(bestStrategy.Mutate());
     }
 
     return order.ToApi();
