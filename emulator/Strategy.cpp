@@ -42,7 +42,7 @@ TStrategy GenerateRandomStrategy(int startTick, int actionDuration, int nActions
 Vector2D GetPreventiveTargetDirection(const TUnit& unit, const TUnit& enemy) {
     auto targetDirection = enemy.Position - unit.Position;
 
-    return norm(targetDirection);
+//    return norm(targetDirection);
 
     if (!unit.Weapon) {
         return norm(targetDirection);
