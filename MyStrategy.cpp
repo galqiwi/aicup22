@@ -10,6 +10,7 @@
 #include "emulator/LootPicker.h"
 #include "emulator/Memory.h"
 #include "emulator/Sound.h"
+#include "emulator/LootPicker.h"
 
 MyStrategy::MyStrategy(const model::Constants& constants) {
     Emulator::SetGlobalConstants(Emulator::TConstants::FromAPI(constants));
@@ -56,27 +57,25 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     for (const auto& [projectileId, _]: world.ProjectileById) {
         projectileIds.push_back(projectileId);
     }
-    
-    std::vector<Emulator::TStrategy> strategies;
-    
-    for (int i = 0; i < nStrategies + world.ProjectileById.size() * 2; ++i) {
+
+    for (const auto& [_, projectile]: world.ProjectileById) {
+        auto direction = Emulator::rot90(projectile.Velocity);
+        forcedStrategies.push_back(Emulator::GenerateRunaway(direction));
+        forcedStrategies.push_back(Emulator::GenerateRunaway(direction * -1));
+    }
+
+    auto target = Emulator::GetTarget(world, unit.id);
+    if (abs(target - Emulator::Vector2D::FromApi(unit.position)) > 0.05) {
+        forcedStrategies.push_back(Emulator::GenerateRunaway(norm(target - Emulator::Vector2D::FromApi(unit.position))));
+    }
+
+    for (int i = 0; i < nStrategies + forcedStrategies.size(); ++i) {
         Emulator::TStrategy strategy;
 
         if (i < forcedStrategies.size()) {
             strategy = forcedStrategies[i];
-//            strategy = std::move(forcedStrategies[i]);
         } else {
-            if (i < nStrategies) {
-                strategy = Emulator::GenerateRandomStrategy(world.CurrentTick, actionDuration, nActions);
-            } else {
-                int projectileId = projectileIds[(i - nStrategies) / 2];
-                auto& projectile = world.ProjectileById[projectileId];
-                auto direction = Emulator::rot90(projectile.Velocity);
-                if (i % 2 == 0) {
-                    direction = Emulator::Vector2D{0, 0} - direction;
-                }
-                strategy = Emulator::GenerateRunaway(direction);
-            }
+            strategy = Emulator::GenerateRandomStrategy(world.CurrentTick, actionDuration, nActions);
         }
         auto score = Emulator::EvaluateStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
 //        Emulator::VisualiseStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
