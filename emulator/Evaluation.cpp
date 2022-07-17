@@ -51,45 +51,45 @@ double AmmoCoefficient(int ammo) {
     return ((double) ammo) / ((double)enoughToKill);
 }
 
+double GetCombatSafety(const TWorld& world, const TUnit& unit) {
+    double combatSafety = 0;
+    std::optional<double> minDist = std::nullopt;
+    for (auto& [_, otherUnit]: world.UnitById) {
+        if (otherUnit.PlayerId == world.MyId) {
+            continue;
+        }
+
+        auto dist = abs(unit.Position - otherUnit.Position);
+        if (dist < otherUnit.GetCombatRadius()) {
+            auto distanceCoefficient = (otherUnit.GetCombatRadius() - dist) / otherUnit.GetCombatRadius();
+            combatSafety -= (otherUnit.Health + otherUnit.Shield + 1) * distanceCoefficient * distanceCoefficient;
+        }
+        if (!minDist || dist < *minDist) {
+            minDist = dist;
+        }
+    }
+
+    if (minDist && *minDist < unit.GetCombatRadius() && unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0) {
+        auto distanceCoefficient = (unit.GetCombatRadius() - *minDist) / unit.GetCombatRadius();
+        combatSafety += (unit.Health + unit.Shield) * distanceCoefficient * distanceCoefficient * AmmoCoefficient(unit.Ammo[2]);
+    }
+
+    return combatSafety;
+}
+
 TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
     static auto constants = GetGlobalConstants();
 
     TScore score = {0, {std::nullopt}, 0};
     std::get<0>(score) = constants->unitHealth - unit.Health;
 
-    // TODO: support more than one player
-    if (world.UnitById.size() > 1) {
-        double combatSafety = 0;
-        double combatRadius = 40;
-        std::optional<double> minDist = std::nullopt;
-        for (auto& [_, otherUnit]: world.UnitById) {
-            if (otherUnit.PlayerId == unit.PlayerId) {
-                continue;
-            }
+    auto combatSafety = GetCombatSafety(world, unit);
 
-            auto dist = abs(unit.Position - otherUnit.Position);
-            if (dist < otherUnit.GetCombatRadius()) {
-                combatSafety -= (otherUnit.Health + otherUnit.Shield + 1) * ((otherUnit.GetCombatRadius() - dist) / otherUnit.GetCombatRadius()) * ((otherUnit.GetCombatRadius() - dist) / otherUnit.GetCombatRadius());
-            }
-            if (!minDist || dist < *minDist) {
-                minDist = dist;
-            }
-        }
-        if (minDist && *minDist < combatRadius && unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0) {
-            combatSafety += (unit.Health + unit.Shield) * ((combatRadius - *minDist) / combatRadius) * ((combatRadius - *minDist) / combatRadius) * AmmoCoefficient(unit.Ammo[2]);
-        }
-        get<1>(score).value = -combatSafety;
+    get<1>(score).value = -combatSafety;
 
-        if (combatSafety >= 0 && !(unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0)) {
-            get<1>(score).value = std::nullopt;
-        }
-
-//        if (combatSafety >= 0 && world.CurrentTick < 60 * constants->ticksPerSecond / constants->zoneSpeed) {
-//            get<1>(score).value = std::nullopt;
-//        }
+    if (combatSafety >= 0 && !(unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0)) {
+        get<1>(score).value = std::nullopt;
     }
-
-//    return score;
 
     auto distScore = abs(unit.Position - GetTarget(world, unit.Id));
     if (distScore < GetGlobalConstants()->unitRadius / 2) {
