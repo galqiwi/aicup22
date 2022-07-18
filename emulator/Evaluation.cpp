@@ -61,10 +61,38 @@ double AmmoCoefficient(int ammo) {
     return ((double) ammo) / ((double)enoughToKill);
 }
 
+double GetPower(const TUnit& killer, const TUnit& victim) {
+    static auto constants = GetGlobalConstants();
+    assert(constants);
+
+    if (!killer.Weapon) {
+        return 0;
+    }
+
+    auto& weapon = constants->weapons[*killer.Weapon];
+
+    long hitsToKill = 0;
+    if (victim.Shield > 0.01) {
+        hitsToKill += std::lround(std::ceil(victim.Shield / weapon.projectileDamage));
+    }
+    if (victim.Health > 0.01) {
+        hitsToKill += std::lround(std::ceil(victim.Health / weapon.projectileDamage));
+    }
+
+    hitsToKill = std::max(hitsToKill, 1l);
+
+//    if (killer.Ammo[*killer.Weapon] < hitsToKill) {
+//        return 0;
+//    }
+
+    return weapon.roundsPerSecond / ((double)hitsToKill);
+}
 
 double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosition) {
     double combatSafety = 0;
     std::optional<double> minDist = std::nullopt;
+    int otherUnitId = -1;
+
     for (auto& [_, otherUnit]: world.UnitById) {
         if (otherUnit.PlayerId == world.MyId) {
             continue;
@@ -73,16 +101,18 @@ double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosi
         auto dist = abs(unitPosition - otherUnit.Position);
         if (dist < otherUnit.GetCombatRadius()) {
             auto distanceCoefficient = (otherUnit.GetCombatRadius() - dist) / otherUnit.GetCombatRadius();
-            combatSafety -= (otherUnit.Health + otherUnit.Shield + 1) * distanceCoefficient * distanceCoefficient;
+            combatSafety -= (GetPower(otherUnit, unit) + 1e-4) * distanceCoefficient * distanceCoefficient;
         }
         if (!minDist || dist < *minDist) {
             minDist = dist;
+            otherUnitId = otherUnit.Id;
         }
     }
 
     if (minDist && *minDist < unit.GetCombatRadius() && unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0) {
+        const auto& otherUnit = world.UnitById.find(otherUnitId)->second;
         auto distanceCoefficient = (unit.GetCombatRadius() - *minDist) / unit.GetCombatRadius();
-        combatSafety += (unit.Health + unit.Shield) * distanceCoefficient * distanceCoefficient * AmmoCoefficient(unit.Ammo[2]);
+        combatSafety += GetPower(unit, otherUnit) * distanceCoefficient * distanceCoefficient;
     }
 
     return combatSafety;
