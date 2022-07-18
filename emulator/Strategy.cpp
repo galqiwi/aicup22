@@ -96,6 +96,10 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     bool isRotation = isRotationStart || (world.CurrentTick - unitState.LastRotationTick < constants->ticksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
+    auto lootId = GetTargetLoot(world, unitId);
+    auto target = GetTarget(unitId, world, lootId);
+    auto canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
+
     // TODO: support multiple players
     if (world.UnitById.size() > 1 && unit.Weapon == 2 && unit.Ammo[2] > 0) {
         std::optional<double> closestDist2;
@@ -134,21 +138,20 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
                     .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second),
                     .Aim = true,
                     .Shoot = shoot,
+                    .Pickup = canPick,
+                    .LootId = lootId.value_or(0),
                 };
             }
         }
     }
 
-    // pick loot if possible
-    auto lootId = GetTargetLoot(world, unitId);
-    auto target = GetTarget(unitId, world, lootId);
-    if (abs(target - unit.Position) < constants->unitRadius) {
+    if (canPick) {
         return {
             .UnitId = unitId,
             .TargetVelocity = Vector2D{0, 0},
             .TargetDirection = isRotation ? rotationDirection:unit.Direction,
             .Pickup = lootId.has_value(),
-            .LootId = (lootId.has_value() ? *lootId:0),
+            .LootId = lootId.value_or(0),
             .IsRotationStart = isRotationStart,
         };
     }
