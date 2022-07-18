@@ -5,18 +5,21 @@
 
 namespace Emulator {
 
-using THealthScore = double;
-using TTargetDistanceScore = double;
-struct TCombatSafetyScore {
+struct TOptionalDouble {
     std::optional<double> value;
 };
+bool operator<(TOptionalDouble a, TOptionalDouble b);
+TOptionalDouble operator+(TOptionalDouble a, TOptionalDouble b);
 
-bool operator<(TCombatSafetyScore a, TCombatSafetyScore b);
-TCombatSafetyScore operator+(TCombatSafetyScore a, TCombatSafetyScore b);
+using THealthScore = double;
+using TTargetDistanceScore = double;
+using TCombatSafetyScore = TOptionalDouble;
 
-using TScore = std::tuple<THealthScore, TCombatSafetyScore, TTargetDistanceScore>;
+using TScore = std::tuple<THealthScore, TOptionalDouble, TTargetDistanceScore>;
 TScore operator+(TScore a, TScore b);
 
+double GetCombatSafety(const TWorld& world, const TUnit& unit);
+double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosition);
 TScore EvaluateWorld(const TWorld& world, const TUnit& unit);
 TScore EvaluateStrategy(const TStrategy& strategy, const TWorld& world, int unitId, int untilTick);
 

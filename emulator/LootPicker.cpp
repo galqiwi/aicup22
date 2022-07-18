@@ -2,12 +2,16 @@
 #include <cassert>
 
 #include "World.h"
+#include "Evaluation.h"
 
 namespace Emulator {
 
-bool LootIsAcceptable(const TWorld &world, int lootId) {
+bool LootIsAcceptable(const TWorld &world, const TUnit& unit, int lootId) {
     const auto& loot = world.LootById.find(lootId)->second;
     if (abs(loot.Position - world.Zone.currentCenter) > world.Zone.currentRadius - 1) {
+        return false;
+    }
+    if (GetCombatSafety(world, unit, loot.Position) < 0) {
         return false;
     }
     return true;
@@ -29,7 +33,7 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
 
     if (unit.ShieldPotions < constants->maxShieldPotionsInInventory) {
         for (auto& loot: world.LootByItemIndex.find(ShieldPotions)->second) {
-            if (!LootIsAcceptable(world, loot.Id)) {
+            if (!LootIsAcceptable(world, unit, loot.Id)) {
                 continue;
             }
             auto dist2 = abs2(loot.Position - unit.Position);
@@ -42,7 +46,7 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
 
     if (unit.Weapon != 2) {
         for (auto& loot: world.LootByItemIndex.find(Weapon)->second) {
-            if (!LootIsAcceptable(world, loot.Id)) {
+            if (!LootIsAcceptable(world, unit, loot.Id)) {
                 continue;
             }
             auto dist2 = abs2(loot.Position - unit.Position);
@@ -55,7 +59,7 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
 
     if (unit.Ammo[2] < constants->weapons[2].maxInventoryAmmo) {
         for (auto& loot: world.LootByItemIndex.find(Ammo)->second) {
-            if (!LootIsAcceptable(world, loot.Id)) {
+            if (!LootIsAcceptable(world, unit, loot.Id)) {
                 continue;
             }
             auto dist2 = abs2(loot.Position - unit.Position);

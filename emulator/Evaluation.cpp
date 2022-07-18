@@ -8,31 +8,19 @@
 
 namespace Emulator {
 
-bool operator<(TCombatSafetyScore a, TCombatSafetyScore b) {
+bool operator<(TOptionalDouble a, TOptionalDouble b) {
     if (a.value == b.value) {
         return false;
     }
 
-    if (!a.value) {
-        a.value = 0;
-    }
-    if (!b.value) {
-        b.value = 0;
-    }
-    return a.value < b.value;
+    return a.value.value_or(0) < b.value.value_or(0);
 }
 
-TCombatSafetyScore operator+(TCombatSafetyScore a, TCombatSafetyScore b) {
+TOptionalDouble operator+(TOptionalDouble a, TOptionalDouble b) {
     if (!a.value && !b.value) {
         return {std::nullopt};
     }
-    if (!a.value) {
-        a.value = 0;
-    }
-    if (!b.value) {
-        b.value = 0;
-    }
-    return {*a.value + *b.value};
+    return {a.value.value_or(0) + b.value.value_or(0)};
 }
 
 TScore operator+(TScore a, TScore b) {
@@ -51,7 +39,8 @@ double AmmoCoefficient(int ammo) {
     return ((double) ammo) / ((double)enoughToKill);
 }
 
-double GetCombatSafety(const TWorld& world, const TUnit& unit) {
+
+double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosition) {
     double combatSafety = 0;
     std::optional<double> minDist = std::nullopt;
     for (auto& [_, otherUnit]: world.UnitById) {
@@ -59,7 +48,7 @@ double GetCombatSafety(const TWorld& world, const TUnit& unit) {
             continue;
         }
 
-        auto dist = abs(unit.Position - otherUnit.Position);
+        auto dist = abs(unitPosition - otherUnit.Position);
         if (dist < otherUnit.GetCombatRadius()) {
             auto distanceCoefficient = (otherUnit.GetCombatRadius() - dist) / otherUnit.GetCombatRadius();
             combatSafety -= (otherUnit.Health + otherUnit.Shield + 1) * distanceCoefficient * distanceCoefficient;
@@ -75,6 +64,10 @@ double GetCombatSafety(const TWorld& world, const TUnit& unit) {
     }
 
     return combatSafety;
+}
+
+double GetCombatSafety(const TWorld& world, const TUnit& unit) {
+    return GetCombatSafety(world, unit, unit.Position);
 }
 
 TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
@@ -95,6 +88,7 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
     if (distScore < GetGlobalConstants()->unitRadius / 2) {
         distScore -= 10;
     }
+
     std::get<2>(score) = distScore;
 
     return score;
