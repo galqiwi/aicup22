@@ -25,14 +25,42 @@ TOptionalDouble operator+(TOptionalDouble a, TOptionalDouble b) {
 
 TScore operator+(TScore a, TScore b) {
     return {
-        get<0>(a) + get<0>(b),
-        get<1>(a) + get<1>(b),
-        get<2>(a) + get<2>(b),
+        .HealthScore = a.HealthScore + b.HealthScore,
+        .CombatSafetyScore = a.CombatSafetyScore + b.CombatSafetyScore,
+        .TargetDistanceScore = a.TargetDistanceScore + b.TargetDistanceScore,
     };
 }
 
+bool operator<(TScore a, TScore b) {
+    if (a.HealthScore < b.HealthScore) {
+        return true;
+    }
+    if (b.HealthScore < a.HealthScore) {
+        return false;
+    }
+    if (a.CombatSafetyScore < b.CombatSafetyScore) {
+        return true;
+    }
+    if (b.CombatSafetyScore < a.CombatSafetyScore) {
+        return false;
+    }
+    if (a.DistanceToFriends < b.DistanceToFriends) {
+        return true;
+    }
+    if (b.DistanceToFriends < a.DistanceToFriends) {
+        return false;
+    }
+    if (a.TargetDistanceScore < b.TargetDistanceScore) {
+        return true;
+    }
+    if (b.TargetDistanceScore < a.TargetDistanceScore) {
+        return false;
+    }
+    return false;
+}
+
 double AmmoCoefficient(int ammo) {
-    int enoughToKill = 10;
+    int enoughToKill = 5;
     if (ammo >= enoughToKill) {
         return 1;
     }
@@ -74,14 +102,14 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
     static auto constants = GetGlobalConstants();
 
     TScore score = {0, {std::nullopt}, 0};
-    std::get<0>(score) = constants->unitHealth - unit.Health;
+    score.HealthScore = constants->unitHealth - unit.Health;
 
     auto combatSafety = GetCombatSafety(world, unit);
 
-    get<1>(score).value = -combatSafety;
+    score.CombatSafetyScore.value = -combatSafety;
 
     if (combatSafety >= 0 && !(unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0)) {
-        get<1>(score).value = std::nullopt;
+        score.CombatSafetyScore.value = std::nullopt;
     }
 
     auto distScore = abs(unit.Position - GetTarget(world, unit.Id));
@@ -89,7 +117,7 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
         distScore -= 10;
     }
 
-    std::get<2>(score) = distScore;
+    score.TargetDistanceScore = distScore;
 
     return score;
 }

@@ -15,8 +15,15 @@ using THealthScore = double;
 using TTargetDistanceScore = double;
 using TCombatSafetyScore = TOptionalDouble;
 
-using TScore = std::tuple<THealthScore, TOptionalDouble, TTargetDistanceScore>;
+//using TScore = std::tuple<THealthScore, TOptionalDouble, TTargetDistanceScore>;
+struct TScore {
+    THealthScore HealthScore{0};
+    TOptionalDouble CombatSafetyScore{{std::nullopt}};
+    TOptionalDouble DistanceToFriends;
+    TTargetDistanceScore TargetDistanceScore{0};
+};
 TScore operator+(TScore a, TScore b);
+bool operator<(TScore a, TScore b);
 
 double GetCombatSafety(const TWorld& world, const TUnit& unit);
 double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosition);

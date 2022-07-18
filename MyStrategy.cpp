@@ -67,7 +67,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 
     auto target = Emulator::GetTarget(world, unit.id);
     if (abs(target - Emulator::Vector2D::FromApi(unit.position)) > 0.05) {
-        forcedStrategies.push_back(Emulator::GenerateRunaway(norm(target - Emulator::Vector2D::FromApi(unit.position))));
+        forcedStrategies.push_back(Emulator::GenerateRunaway(norm(target - Emulator::Vector2D::FromApi(unit.position))  ));
     }
 
     for (int i = 0; i < nStrategies + forcedStrategies.size(); ++i) {

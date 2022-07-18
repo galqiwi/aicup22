@@ -191,10 +191,10 @@ void VisualiseStrategy(const TStrategy& strategy, const TWorld &world, int unitI
 
         auto score = EvaluateWorld(world, unit);
         debugging::Color color = debugging::Color(0, 1, 0, 1);
-        if (!get<1>(score).value) {
+        if (score.CombatSafetyScore.value) {
             color = debugging::Color(0.5, 0.5, 0.5, 1);
         } else {
-            if (*get<1>(score).value > 0) {
+            if (score.CombatSafetyScore.value > 0) {
                 color = debugging::Color(1, 0, 0, 1);
             }
         }
