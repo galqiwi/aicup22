@@ -33,7 +33,7 @@ void TMemory::Update(const TWorld &world) {
         }
     }
 
-    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 8) == 4) {
+    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 8) == 0) {
         LootById.clear();
         return;
     }
@@ -41,6 +41,7 @@ void TMemory::Update(const TWorld &world) {
         LootById2.clear();
         return;
     }
+
     for (const auto& [_, loot]: world.LootById) {
         LootById.insert({loot.Id, loot});
         LootById2.insert({loot.Id, loot});

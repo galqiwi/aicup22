@@ -49,6 +49,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 
     memory.InjectKnowledge(world);
     world.UpdateLootIndex();
+    world.UpdateUnitsTargetLoot();
 
     std::optional<Emulator::TScore> bestScore = std::nullopt;
     Emulator::TStrategy bestStrategy;
@@ -103,7 +104,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 //    for (const auto& [_, loot]: world.LootById) {
 //        debugInterface->addCircle(loot.Position.ToApi(), 0.6, debugging::Color(1, 0, 1, 1));
 //    }
-
+//
 //    for (const auto& [_, otherUnit]: world.UnitById) {
 //        auto color = debugging::Color(0, 1, 0, 1);
 //        if (Emulator::GetGlobalConstants()->obstaclesMeta.SegmentIntersectsObstacle(otherUnit.Position, Emulator::Vector2D::FromApi(unit.position))) {
@@ -113,7 +114,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 //    }
 
 
-    auto order = bestStrategy.GetOrder(world, unit.id);
+    auto order = bestStrategy.GetOrder(world, unit.id, /*forSimulation*/ false);
 
     auto newState = world.StateByUnitId[unit.id];
     newState.Update(world, order);

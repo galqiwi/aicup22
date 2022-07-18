@@ -104,11 +104,13 @@ public:
     std::unordered_map<int, TLoot> LootById;
     std::unordered_map<int, std::vector<TLoot>> LootByItemIndex;
     std::unordered_map<int, TState> StateByUnitId;
+    std::optional<std::unordered_map<int, std::optional<int>>> LootIdByUnitId;
 
     void PrepareEmulation();
     void EmulateOrder(const TOrder& order);
     void Tick();
     void UpdateLootIndex();
+    void UpdateUnitsTargetLoot();
 private:
     Vector2D ClipVelocity(Vector2D velocity, const TUnit& unit);
     Vector2D ApplyAcceleration(Vector2D velocity, Vector2D targetVelocity);

@@ -18,7 +18,7 @@ struct TStrategy {
 
     std::vector<TStrategyAction> Actions;
 
-    [[nodiscard]] TOrder GetOrder(const TWorld& world, int unitId) const;
+    [[nodiscard]] TOrder GetOrder(const TWorld& world, int unitId, bool forSimulation = true) const;
 
     TStrategy Mutate();
 };

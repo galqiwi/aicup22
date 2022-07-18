@@ -61,7 +61,7 @@ Vector2D GetPreventiveTargetDirection(const TUnit& unit, const TUnit& enemy) {
     return norm(targetDirection) * angleAdjustmentCos + norm(velocityProjection) * angleAdjustmentSin;
 }
 
-TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
+TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) const {
     int currentActionId = -1;
     int actionStartTick = StartTick;
     auto constants = GetGlobalConstants();
@@ -119,7 +119,11 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId) const {
             auto actionRadius = std::max(otherUnit.GetCombatRadius(), unit.GetCombatRadius());
 
             if (*closestDist2 < actionRadius * actionRadius) {
-                bool shoot = !constants->obstaclesMeta.SegmentIntersectsObstacle(unit.Position, otherUnit.Position);
+                bool shoot = true;
+                if (!forSimulation) {
+                    shoot = !constants->obstaclesMeta.SegmentIntersectsObstacle(unit.Position, otherUnit.Position);
+                }
+
                 if (otherUnit.RemainingSpawnTime > 0) {
                     shoot = false;
                 }

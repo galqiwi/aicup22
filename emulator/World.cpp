@@ -3,6 +3,8 @@
 
 #include "model/Item.hpp"
 
+#include "emulator/LootPicker.h"
+
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -358,6 +360,20 @@ void TWorld::UpdateLootIndex() {
     LootByItemIndex[Weapon];
     LootByItemIndex[ShieldPotions];
     LootByItemIndex[Ammo];
+}
+
+void TWorld::UpdateUnitsTargetLoot() {
+    LootIdByUnitId = std::nullopt;
+
+    std::unordered_map<int, std::optional<int>> lootIdByUnitId;
+    for (auto& [unitId, unit]: UnitById) {
+        if (unit.PlayerId != MyId) {
+            continue;
+        }
+        lootIdByUnitId[unitId] = GetTargetLoot(*this, unitId);
+    }
+
+    LootIdByUnitId = std::move(lootIdByUnitId);
 }
 
 double TUnit::GetCombatRadius() const {

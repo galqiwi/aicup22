@@ -14,6 +14,11 @@ bool LootIsAcceptable(const TWorld &world, int lootId) {
 }
 
 std::optional<int> GetTargetLoot(const TWorld &world, int unitId) {
+    if (world.LootIdByUnitId) {
+        assert((*world.LootIdByUnitId).contains(unitId));
+        return (*world.LootIdByUnitId).find(unitId)->second;
+    }
+    
     static auto constants = GetGlobalConstants();
     assert(constants);
 
