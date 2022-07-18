@@ -44,12 +44,6 @@ bool operator<(TScore a, TScore b) {
     if (b.CombatSafetyScore < a.CombatSafetyScore) {
         return false;
     }
-    if (a.DistanceToFriends < b.DistanceToFriends) {
-        return true;
-    }
-    if (b.DistanceToFriends < a.DistanceToFriends) {
-        return false;
-    }
     if (a.TargetDistanceScore < b.TargetDistanceScore) {
         return true;
     }

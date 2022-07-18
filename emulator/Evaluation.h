@@ -19,7 +19,6 @@ using TCombatSafetyScore = TOptionalDouble;
 struct TScore {
     THealthScore HealthScore{0};
     TOptionalDouble CombatSafetyScore{{std::nullopt}};
-    TOptionalDouble DistanceToFriends;
     TTargetDistanceScore TargetDistanceScore{0};
 };
 TScore operator+(TScore a, TScore b);
