@@ -35,11 +35,9 @@ void TMemory::Update(const TWorld &world) {
 
     if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 8) == 0) {
         LootById.clear();
-        return;
     }
     if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 8) == GetGlobalConstants()->ticksPerSecond * 4) {
         LootById2.clear();
-        return;
     }
 
     for (const auto& [_, loot]: world.LootById) {
