@@ -80,12 +80,22 @@ struct TLoot {
     int Amount;
 };
 
+enum EAutomatonState {
+    RES_GATHERING = 0,
+    FIGHT = 1,
+};
+
 struct TState {
     void Update(const TWorld& world, const TOrder& order);
+    void Sync(const TWorld& world);
 
     double spiralAngle{0};
 
     int LastRotationTick{0};
+
+    int UnitId{-1};
+
+    EAutomatonState AutomatonState{RES_GATHERING};
 };
 
 class TWorld {

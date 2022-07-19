@@ -62,6 +62,8 @@ Vector2D GetPreventiveTargetDirection(const TUnit& unit, const TUnit& enemy) {
 }
 
 TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) const {
+    const auto& state = world.StateByUnitId.find(unitId)->second;
+
     int currentActionId = -1;
     int actionStartTick = StartTick;
     auto constants = GetGlobalConstants();
@@ -101,7 +103,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     auto canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
 
     // TODO: support multiple players
-    if (world.UnitById.size() > 1 && unit.Weapon == 2 && unit.Ammo[2] > 0) {
+    if (state.AutomatonState == FIGHT) {
         std::optional<double> closestDist2;
         int closestUnitId;
         for (const auto& [_, otherUnit]: world.UnitById) {

@@ -81,14 +81,11 @@ double GetPower(const TUnit& killer, const TUnit& victim) {
 
     hitsToKill = std::max(hitsToKill, 1l);
 
-//    if (killer.Ammo[*killer.Weapon] < hitsToKill) {
-//        return 0;
-//    }
-
     return weapon.roundsPerSecond / ((double)hitsToKill);
 }
 
 double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosition) {
+    const auto& state = world.StateByUnitId.find(unit.Id)->second;
     double combatSafety = 0;
     std::optional<double> minDist = std::nullopt;
     int otherUnitId = -1;
@@ -109,7 +106,7 @@ double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosi
         }
     }
 
-    if (minDist && *minDist < unit.GetCombatRadius() && unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0) {
+    if (minDist && *minDist < unit.GetCombatRadius() && state.AutomatonState == FIGHT) {
         const auto& otherUnit = world.UnitById.find(otherUnitId)->second;
         auto distanceCoefficient = (unit.GetCombatRadius() - *minDist) / unit.GetCombatRadius();
         combatSafety += GetPower(unit, otherUnit) * distanceCoefficient * distanceCoefficient;
@@ -123,6 +120,7 @@ double GetCombatSafety(const TWorld& world, const TUnit& unit) {
 }
 
 TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
+    const auto& state = world.StateByUnitId.find(unit.Id)->second;
     static auto constants = GetGlobalConstants();
 
     TScore score = {0, {std::nullopt}, 0};
@@ -132,7 +130,7 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
 
     score.CombatSafetyScore.value = -combatSafety;
 
-    if (combatSafety >= 0 && !(unit.Weapon == 2 && unit.Shield > 0 && unit.Ammo[2] > 0)) {
+    if (combatSafety >= 0 && state.AutomatonState != FIGHT) {
         score.CombatSafetyScore.value = std::nullopt;
     }
 
@@ -153,6 +151,7 @@ TScore EvaluateStrategy(const TStrategy &strategy, const TWorld& world, int unit
     TScore score = {0, {std::nullopt}, 0};
 
     while (currentWorld.CurrentTick < untilTick) {
+        currentWorld.StateByUnitId[unitId].Sync(currentWorld);
         currentWorld.PrepareEmulation();
         auto order = strategy.GetOrder(currentWorld, unitId);
         currentWorld.EmulateOrder(order);

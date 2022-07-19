@@ -8,7 +8,7 @@ namespace Emulator {
 
 bool LootIsAcceptable(const TWorld &world, const TUnit& unit, int lootId) {
     const auto& loot = world.LootById.find(lootId)->second;
-    if (abs(loot.Position - world.Zone.currentCenter) > world.Zone.currentRadius - 1) {
+    if (abs(loot.Position - world.Zone.currentCenter) > world.Zone.currentRadius - 4) {
         return false;
     }
     if (GetCombatSafety(world, unit, loot.Position) < 0) {

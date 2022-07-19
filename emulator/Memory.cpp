@@ -83,7 +83,7 @@ void TMemory::Update(const TWorld &world) {
         if (unit.PlayerId != world.MyId) {
             continue;
         }
-        StateByUnitId[id];
+        StateByUnitId[id].UnitId = id;
     }
 }
 

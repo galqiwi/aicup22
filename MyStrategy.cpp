@@ -51,6 +51,11 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     world.UpdateLootIndex();
     world.UpdateUnitsTargetLoot();
 
+    {
+        auto& newState = world.StateByUnitId[unit.id];
+        newState.Sync(world);
+    }
+
     std::optional<Emulator::TScore> bestScore = std::nullopt;
     Emulator::TStrategy bestStrategy;
 
@@ -116,9 +121,11 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 
     auto order = bestStrategy.GetOrder(world, unit.id, /*forSimulation*/ false);
 
-    auto newState = world.StateByUnitId[unit.id];
-    newState.Update(world, order);
-    memory.RememberState(unit.id, newState);
+    {
+        auto newState = world.StateByUnitId[unit.id];
+        newState.Update(world, order);
+        memory.RememberState(unit.id, newState);
+    }
 
     if (order.Pickup) {
         memory.ForgetLoot(order.LootId);

@@ -37,6 +37,36 @@ void TState::Update(const TWorld& world, const TOrder& order) {
     spiralAngle += (constants->maxUnitForwardSpeed / constants->ticksPerSecond) / (0.75 * world.Zone.nextRadius);
 }
 
+EAutomatonState updateAutomatonState(EAutomatonState state, const TWorld& world, int UnitId) {
+    const auto& unit = world.UnitById.find(UnitId)->second;
+
+    if (unit.RemainingSpawnTime && unit.RemainingSpawnTime > 0) {
+        return RES_GATHERING;
+    }
+
+    if (state == RES_GATHERING) {
+        if (unit.Weapon == 2 && unit.Ammo[2] > 0 && unit.Shield > 0) {
+            return FIGHT;
+        } else {
+            return RES_GATHERING;
+        }
+    }
+
+    if (state == FIGHT) {
+        if (unit.Weapon == 2 && unit.Ammo[2] > 0 && unit.Shield > 0) {
+            return FIGHT;
+        } else {
+            return RES_GATHERING;
+        }
+    }
+
+    abort();
+}
+
+void TState::Sync(const TWorld& world) {
+    AutomatonState = updateAutomatonState(AutomatonState, world, UnitId);
+}
+
 TWorld TWorld::FormApi(const model::Game& game) {
     TWorld output;
 
