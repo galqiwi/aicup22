@@ -102,6 +102,12 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     auto target = GetTarget(unitId, world, lootId);
     auto canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
 
+    if (!forSimulation && !canPick) {
+        lootId = GetTargetLoot(world, unitId, false);
+        target = GetTarget(unitId, world, lootId);
+        canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
+    }
+
     // TODO: support multiple players
     if (state.AutomatonState == FIGHT) {
         std::optional<double> closestDist2;
