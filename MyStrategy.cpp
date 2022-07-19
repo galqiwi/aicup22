@@ -2,6 +2,7 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <chrono>
 
 #include "emulator/Constants.h"
 #include "emulator/DebugSingleton.h"
@@ -16,7 +17,7 @@ MyStrategy::MyStrategy(const model::Constants& constants) {
     Emulator::SetGlobalConstants(Emulator::TConstants::FromAPI(constants));
 }
 
-model::Order MyStrategy::getOrder(const model::Game& game, DebugInterface* debugInterface) {
+model::Order MyStrategy::doGetOrder(const model::Game& game, DebugInterface* debugInterface) {
     std::unordered_map<int, model::UnitOrder> actions;
     for (auto &unit : game.units)
     {
@@ -29,7 +30,20 @@ model::Order MyStrategy::getOrder(const model::Game& game, DebugInterface* debug
     return {actions};
 }
 
+model::Order MyStrategy::getOrder(const model::Game& game, DebugInterface* debugInterface) {
+    static auto globalStart = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
+    auto output = doGetOrder(game, debugInterface);
+    auto finish = std::chrono::high_resolution_clock::now();
+
+    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(finish-globalStart).count() / 1000. << "\t";
+    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() / 1000. << "\n";
+
+    return output;
+}
+
 model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterface* debugInterface, const model::Unit& unit) {
+    static auto constants = Emulator::GetGlobalConstants();
     static std::unordered_map<int, std::vector<Emulator::TStrategy>> forcedStrategiesById;
     static Emulator::TMemory memory;
     auto& forcedStrategies = forcedStrategiesById[unit.id];
@@ -75,7 +89,18 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         forcedStrategies.push_back(Emulator::GenerateRunaway(norm(target - Emulator::Vector2D::FromApi(unit.position))  ));
     }
 
-    for (int i = 0; i < nStrategies + forcedStrategies.size(); ++i) {
+    auto start = std::chrono::high_resolution_clock::now();
+    int64_t microsecondsToGo = 30000 / constants->teamSize;
+
+    for (int i = 0;; ++i) {
+        if (i >= nStrategies + forcedStrategies.size()) {
+            break;
+        }
+
+//        if (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count() > microsecondsToGo) {
+//            break;
+//        }
+
         Emulator::TStrategy strategy;
 
         if (i < forcedStrategies.size()) {

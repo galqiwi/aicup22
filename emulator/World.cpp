@@ -330,12 +330,13 @@ void TWorld::PrepareEmulation() {
         unit.RemainingSpawnTime = *unit.RemainingSpawnTime - 1 / Constants_->ticksPerSecond;
         if (unit.RemainingSpawnTime <= 0) {
             unit.RemainingSpawnTime = std::nullopt;
-            for (auto obstacleId: Constants_->obstaclesMeta.GetIntersectingIds(unit.Position)) {
-                const auto& obstacle = Constants_->obstacles[obstacleId];
-                if (abs(obstacle.Center - unit.Position) <= obstacle.Radius + Constants_->unitRadius) {
-                    // it's hard to make a proper simulation, so let's just assume that this damage is bad
-                    unit.Health -= 10000;
-                }
+        }
+
+        for (auto obstacleId: Constants_->obstaclesMeta.GetIntersectingIds(unit.Position)) {
+            const auto& obstacle = Constants_->obstacles[obstacleId];
+            if (abs(obstacle.Center - unit.Position) <= (obstacle.Radius + Constants_->unitRadius - 0.08)) {
+                // it's hard to make a proper simulation, so let's just assume that this damage is bad
+                unit.Health -= 10000;
             }
         }
     }

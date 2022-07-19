@@ -84,6 +84,25 @@ double GetPower(const TUnit& killer, const TUnit& victim) {
     return weapon.roundsPerSecond / ((double)hitsToKill);
 }
 
+double DirectionCoefficient(Vector2D unitPosition, const TUnit& otherUnit) {
+    const auto& constants = GetGlobalConstants();
+    assert(constants);
+
+    if (otherUnit.Imaginable) {
+        return 1;
+    }
+
+    if (abs(unitPosition - otherUnit.Direction) < 1) {
+        return 1;
+    }
+
+    auto cosAngle = norm(otherUnit.Direction) * norm(unitPosition - otherUnit.Position);
+    if (cosAngle > 0) {
+        return 1;
+    }
+    return cosAngle + 1;
+}
+
 double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosition) {
     const auto& state = world.StateByUnitId.find(unit.Id)->second;
     double combatSafety = 0;
@@ -98,7 +117,7 @@ double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosi
         auto dist = abs(unitPosition - otherUnit.Position);
         if (dist < otherUnit.GetCombatRadius()) {
             auto distanceCoefficient = (otherUnit.GetCombatRadius() - dist) / otherUnit.GetCombatRadius();
-            combatSafety -= (GetPower(otherUnit, unit) + 1e-4) * distanceCoefficient * distanceCoefficient;
+            combatSafety -= (GetPower(otherUnit, unit) + 1e-4) * distanceCoefficient * distanceCoefficient * DirectionCoefficient(unit.Position, otherUnit);
         }
         if (!minDist || dist < *minDist) {
             minDist = dist;
