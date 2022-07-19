@@ -93,13 +93,13 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     int64_t microsecondsToGo = 30000 / constants->teamSize;
 
     for (int i = 0;; ++i) {
-        if (i >= nStrategies + forcedStrategies.size()) {
-            break;
-        }
-
-//        if (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count() > microsecondsToGo) {
+//        if (i >= nStrategies + forcedStrategies.size()) {
 //            break;
 //        }
+
+        if (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count() > microsecondsToGo) {
+            break;
+        }
 
         Emulator::TStrategy strategy;
 
