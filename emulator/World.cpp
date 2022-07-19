@@ -38,10 +38,17 @@ void TState::Update(const TWorld& world, const TOrder& order) {
 }
 
 EAutomatonState updateAutomatonState(EAutomatonState state, const TWorld& world, int UnitId) {
+    auto constants = GetGlobalConstants();
+    assert(constants);
+
     const auto& unit = world.UnitById.find(UnitId)->second;
 
     if (unit.RemainingSpawnTime && unit.RemainingSpawnTime > 0) {
         return RES_GATHERING;
+    }
+
+    if (world.Zone.currentRadius * 2 <= constants->viewDistance) {
+        return FIGHT;
     }
 
     if (state == RES_GATHERING) {
@@ -309,7 +316,7 @@ void TWorld::PrepareEmulation() {
         if (unit.PlayerId != MyId) {
             continue;
         }
-        if (abs(unit.Position - Zone.currentCenter) > Zone.currentRadius - Constants_->unitRadius * 4) {
+        if (abs(unit.Position - Zone.currentCenter) > Zone.currentRadius - Constants_->unitRadius * 3) {
             unit.Health -= Constants_->zoneDamagePerSecond / Constants_->ticksPerSecond;
         }
     }
