@@ -1,5 +1,6 @@
 #pragma once
 
+#include "public.h"
 #include "Strategy.h"
 #include "World.h"
 
@@ -20,6 +21,8 @@ struct TScore {
     THealthScore HealthScore{0};
     TOptionalDouble CombatSafetyScore{{std::nullopt}};
     TTargetDistanceScore TargetDistanceScore{0};
+
+    EAutomatonState Mode{FIGHT};
 };
 TScore operator+(TScore a, TScore b);
 bool operator<(TScore a, TScore b);

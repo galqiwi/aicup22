@@ -125,7 +125,7 @@ double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosi
         }
     }
 
-    if (minDist && *minDist < unit.GetCombatRadius() && state.AutomatonState == FIGHT) {
+    if (minDist && *minDist < unit.GetCombatRadius() && state.AutomatonState != RES_GATHERING) {
         const auto& otherUnit = world.UnitById.find(otherUnitId)->second;
         auto distanceCoefficient = (unit.GetCombatRadius() - *minDist) / unit.GetCombatRadius();
         combatSafety += GetPower(unit, otherUnit) * distanceCoefficient * distanceCoefficient;
@@ -143,13 +143,14 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
     static auto constants = GetGlobalConstants();
 
     TScore score = {0, {std::nullopt}, 0};
+
     score.HealthScore = constants->unitHealth - unit.Health;
 
     auto combatSafety = GetCombatSafety(world, unit);
 
     score.CombatSafetyScore.value = -combatSafety;
 
-    if (combatSafety >= 0 && state.AutomatonState != FIGHT) {
+    if (combatSafety >= 0 && state.AutomatonState == RES_GATHERING) {
         score.CombatSafetyScore.value = std::nullopt;
     }
 
@@ -164,6 +165,8 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
 }
 
 TScore EvaluateStrategy(const TStrategy &strategy, const TWorld& world, int unitId, int untilTick) {
+    assert(world.StateByUnitId.contains(unitId));
+    const auto& state = world.StateByUnitId.find(unitId)->second;
     TWorld currentWorld = world;
     const auto& unit = currentWorld.UnitById[unitId];
 

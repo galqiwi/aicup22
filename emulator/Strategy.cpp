@@ -109,7 +109,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     }
 
     // TODO: support multiple players
-    if (state.AutomatonState == FIGHT) {
+    if (state.AutomatonState != RES_GATHERING) {
         std::optional<double> closestDist2;
         int closestUnitId;
         for (const auto& [_, otherUnit]: world.UnitById) {

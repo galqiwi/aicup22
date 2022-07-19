@@ -80,12 +80,6 @@ struct TLoot {
     int Amount;
 };
 
-enum EAutomatonState {
-    RES_GATHERING = 0,
-    FIGHT = 1,
-    CRAZY_MODE = 2,
-};
-
 struct TState {
     void Update(const TWorld& world, const TOrder& order);
     void Sync(const TWorld& world);

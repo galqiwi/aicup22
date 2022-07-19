@@ -47,8 +47,8 @@ EAutomatonState updateAutomatonState(EAutomatonState state, const TWorld& world,
         return RES_GATHERING;
     }
 
-    if (world.Zone.currentRadius * 2 <= constants->viewDistance) {
-        return FIGHT;
+    if (world.Zone.currentRadius <= 2 * constants->viewDistance) {
+        return ENDING_MODE;
     }
 
     if (state == RES_GATHERING) {
@@ -246,6 +246,9 @@ void TWorld::MoveCollidingUnit(TUnit& unit, Vector2D velocity) {
     }
 
     for (const auto& obstacleId: Constants_->obstaclesMeta.GetIntersectingIds(unit.Position)) {
+        if (unit.RemainingSpawnTime > 0) {
+            break;
+        }
         auto& obstacle = Constants_->obstacles[obstacleId];
 
         if (abs2(obstacle.Center - unit.Position) > (obstacle.Radius + Constants_->unitRadius) * (obstacle.Radius + Constants_->unitRadius)) {

@@ -26,4 +26,10 @@ struct TLoot;
 
 struct TState;
 
+enum EAutomatonState {
+    RES_GATHERING = 0,
+    FIGHT = 1,
+    ENDING_MODE = 2,
+};
+
 }
