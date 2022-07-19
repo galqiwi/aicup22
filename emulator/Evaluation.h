@@ -23,6 +23,7 @@ struct TScore {
 };
 TScore operator+(TScore a, TScore b);
 bool operator<(TScore a, TScore b);
+//std::ostream& operator<<(std::ostream& out, const TScore& score);
 
 double GetCombatSafety(const TWorld& world, const TUnit& unit);
 double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosition);
