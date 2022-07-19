@@ -32,25 +32,42 @@ TScore operator+(TScore a, TScore b) {
 }
 
 bool operator<(TScore a, TScore b) {
+    assert(a.Mode == b.Mode);
     if (a.HealthScore < b.HealthScore) {
         return true;
     }
     if (b.HealthScore < a.HealthScore) {
         return false;
     }
-    if (a.CombatSafetyScore < b.CombatSafetyScore) {
-        return true;
-    }
-    if (b.CombatSafetyScore < a.CombatSafetyScore) {
+    if (a.Mode == ENDING_MODE) {
+        if (a.TargetDistanceScore < b.TargetDistanceScore) {
+            return true;
+        }
+        if (b.TargetDistanceScore < a.TargetDistanceScore) {
+            return false;
+        }
+        if (a.CombatSafetyScore < b.CombatSafetyScore) {
+            return true;
+        }
+        if (b.CombatSafetyScore < a.CombatSafetyScore) {
+            return false;
+        }
+        return false;
+    } else {
+        if (a.CombatSafetyScore < b.CombatSafetyScore) {
+            return true;
+        }
+        if (b.CombatSafetyScore < a.CombatSafetyScore) {
+            return false;
+        }
+        if (a.TargetDistanceScore < b.TargetDistanceScore) {
+            return true;
+        }
+        if (b.TargetDistanceScore < a.TargetDistanceScore) {
+            return false;
+        }
         return false;
     }
-    if (a.TargetDistanceScore < b.TargetDistanceScore) {
-        return true;
-    }
-    if (b.TargetDistanceScore < a.TargetDistanceScore) {
-        return false;
-    }
-    return false;
 }
 
 double AmmoCoefficient(int ammo) {
