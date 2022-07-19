@@ -84,8 +84,8 @@ Vector2D GetTarget(int unitId, const TWorld &world, std::optional<int> loot) {
     }
 }
 
-Vector2D GetTarget(const TWorld &world, int unitId) {
-    return GetTarget(unitId, world, GetTargetLoot(world, unitId));
+Vector2D GetTarget(const TWorld &world, int unitId, bool forSimulation) {
+    return GetTarget(unitId, world, GetTargetLoot(world, unitId, forSimulation));
 }
 
 }

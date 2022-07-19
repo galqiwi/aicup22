@@ -163,6 +163,12 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
 
     score.HealthScore = constants->unitHealth - unit.Health;
 
+//    if (world.Zone.currentRadius < 2 * constants->viewDistance && unit.Weapon && unit.Ammo[*unit.Weapon] == 0 && unit.ExtraLives > 0 && world.Zone.currentRadius > constants->lastRespawnZoneRadius) {
+//        if (!GetTargetLoot(world, unit.Id, false)) {
+//            score.HealthScore = -score.HealthScore;
+//        }
+//    }
+
     auto combatSafety = GetCombatSafety(world, unit);
 
     score.CombatSafetyScore.value = -combatSafety;
@@ -171,7 +177,7 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
         score.CombatSafetyScore.value = std::nullopt;
     }
 
-    auto distScore = abs(unit.Position - GetTarget(world, unit.Id));
+    auto distScore = abs(unit.Position - GetTarget(world, unit.Id, state.AutomatonState != ENDING_MODE));
     if (distScore < GetGlobalConstants()->unitRadius / 2) {
         distScore -= 10;
     }

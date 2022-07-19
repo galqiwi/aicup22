@@ -98,7 +98,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     bool isRotation = isRotationStart || (world.CurrentTick - unitState.LastRotationTick < constants->ticksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
-    auto lootId = GetTargetLoot(world, unitId);
+    auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ state.AutomatonState != ENDING_MODE);
     auto target = GetTarget(unitId, world, lootId);
     auto canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
 
