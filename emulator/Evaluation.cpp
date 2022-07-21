@@ -85,25 +85,6 @@ double GetPower(const TUnit& killer, const TUnit& victim) {
     return weapon.roundsPerSecond / ((double)hitsToKill);
 }
 
-double DirectionCoefficient(Vector2D unitPosition, const TUnit& otherUnit) {
-    const auto& constants = GetGlobalConstants();
-    assert(constants);
-
-    if (otherUnit.Imaginable) {
-        return 1;
-    }
-
-    if (abs(unitPosition - otherUnit.Direction) < 1) {
-        return 1;
-    }
-
-    auto cosAngle = norm(otherUnit.Direction) * norm(unitPosition - otherUnit.Position);
-    if (cosAngle > 0) {
-        return 1;
-    }
-    return cosAngle + 1;
-}
-
 double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosition) {
     const auto& state = world.StateByUnitId.find(unit.Id)->second;
     double combatSafety = 0;
@@ -121,7 +102,7 @@ double GetCombatSafety(const TWorld& world, const TUnit& unit, Vector2D unitPosi
         auto otherUnitCombatRadius = otherUnit.GetCombatRadius() * radiusCoefficient;
         if (dist < otherUnitCombatRadius) {
             auto distanceCoefficient = (otherUnitCombatRadius - dist) / otherUnitCombatRadius;
-            combatSafety -= (GetPower(otherUnit, unit) + 1e-4) * distanceCoefficient * distanceCoefficient * DirectionCoefficient(unit.Position, otherUnit);
+            combatSafety -= (GetPower(otherUnit, unit) + 1e-4) * distanceCoefficient * distanceCoefficient;
         }
         if (!minDist || dist < *minDist) {
             minDist = dist;
@@ -151,9 +132,6 @@ TScore EvaluateResGatheringWorld(const TWorld& world, const TUnit& unit) {
     score.CombatSafetyScore.value = std::nullopt;
 
     auto distScore = abs(unit.Position - GetTarget(world, unit.Id, true));
-    if (distScore < GetGlobalConstants()->unitRadius / 2) {
-        distScore -= 10;
-    }
     score.TargetDistanceScore = distScore;
 
     return score;
@@ -177,9 +155,6 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
     score.CombatSafetyScore.value = -combatSafety;
 
     auto distScore = abs(unit.Position - GetTarget(world, unit.Id, true));
-    if (distScore < GetGlobalConstants()->unitRadius / 2) {
-        distScore -= 10;
-    }
 
     score.TargetDistanceScore = distScore;
 
