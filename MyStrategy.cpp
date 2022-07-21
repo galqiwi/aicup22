@@ -1,17 +1,17 @@
 #include "MyStrategy.hpp"
+#include <cassert>
+#include <chrono>
 #include <exception>
 #include <fstream>
 #include <iostream>
-#include <chrono>
 
 #include "emulator/Constants.h"
 #include "emulator/DebugSingleton.h"
 #include "emulator/Evaluation.h"
-#include "emulator/World.h"
 #include "emulator/LootPicker.h"
 #include "emulator/Memory.h"
 #include "emulator/Sound.h"
-#include "emulator/LootPicker.h"
+#include "emulator/World.h"
 
 MyStrategy::MyStrategy(const model::Constants& constants) {
     Emulator::SetGlobalConstants(Emulator::TConstants::FromAPI(constants));
@@ -71,7 +71,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     }
 
     std::optional<Emulator::TScore> bestScore = std::nullopt;
-    Emulator::TStrategy bestStrategy;
+    std::optional<Emulator::TStrategy> bestStrategy;
 
     std::vector<int> projectileIds;
     for (const auto& [projectileId, _]: world.ProjectileById) {
@@ -89,15 +89,18 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         forcedStrategies.push_back(Emulator::GenerateRunaway(norm(target - Emulator::Vector2D::FromApi(unit.position))  ));
     }
 
-    auto start = std::chrono::high_resolution_clock::now();
+    static int64_t globalTimeResource = 0;
     int64_t microsecondsToGo = 30000 / constants->teamSize;
+    globalTimeResource += microsecondsToGo;
+
+    auto start = std::chrono::high_resolution_clock::now();
 
     for (int i = 0;; ++i) {
-//        if (i >= nStrategies + forcedStrategies.size()) {
-//            break;
-//        }
+        if (i >= nStrategies + forcedStrategies.size()) {
+            break;
+        }
 
-        if (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count() > microsecondsToGo) {
+        if (i > forcedStrategies.size() && std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count() > globalTimeResource) {
             break;
         }
 
@@ -145,7 +148,8 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 
 //    debugInterface->addCircle(unit.position, 0.9, world.PreprocessedDataById[unit.id].InDanger ? debugging::Color(1, 0, 0, 1):debugging::Color(0, 1, 0, 1));
 
-    auto order = bestStrategy.GetOrder(world, unit.id, /*forSimulation*/ false);
+    assert(bestStrategy);
+    auto order = bestStrategy->GetOrder(world, unit.id, /*forSimulation*/ false);
 
     {
         auto newState = world.StateByUnitId[unit.id];
@@ -158,10 +162,12 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     }
 
     forcedStrategies.resize(0);
-    forcedStrategies.push_back(bestStrategy);
+    forcedStrategies.push_back(*bestStrategy);
     for (int i = 0; i < nMutations; ++i) {
-        forcedStrategies.push_back(bestStrategy.Mutate());
+        forcedStrategies.push_back(bestStrategy->Mutate());
     }
+
+    globalTimeResource -= std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count();
 
     return order.ToApi();
 }
