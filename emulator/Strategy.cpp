@@ -131,6 +131,18 @@ TOrder TStrategy::GetResGatheringOrder(const TWorld &world, int unitId, bool for
 
 TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) const {
     const auto& state = world.StateByUnitId.find(unitId)->second;
+    const auto& preprocessedData = world.PreprocessedDataById.find(unitId)->second;
+
+//    if (preprocessedData.InDanger) {
+//        auto action = GetAction(world.CurrentTick);
+//        const auto& unit = world.UnitById.find(unitId)->second;
+//
+//        return {
+//            .UnitId = unitId,
+//            .TargetVelocity = action.Speed,
+//            .TargetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction,
+//        };
+//    }
 
     if (state.AutomatonState == RES_GATHERING) {
         return GetResGatheringOrder(world, unitId, forSimulation);
@@ -217,8 +229,6 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
             .IsRotationStart = isRotationStart,
         };
     }
-
-
 
     return {
         .UnitId = unitId,

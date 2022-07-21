@@ -93,6 +93,10 @@ struct TState {
     EAutomatonState AutomatonState{RES_GATHERING};
 };
 
+struct TPreprocessedData {
+    bool InDanger{false};
+};
+
 class TWorld {
 public:
     void Emulate(const std::vector<TOrder>& orders);
@@ -110,6 +114,7 @@ public:
     std::unordered_map<int, std::vector<TLoot>> LootByItemIndex;
     std::unordered_map<int, TState> StateByUnitId;
     std::optional<std::unordered_map<int, std::optional<int>>> LootIdByUnitId;
+    std::unordered_map<int, TPreprocessedData> PreprocessedDataById;
 
     void PrepareEmulation();
     void EmulateOrder(const TOrder& order);

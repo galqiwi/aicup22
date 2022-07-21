@@ -143,6 +143,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 //        debugInterface->addPolyLine({unit.position, otherUnit.Position.ToApi()}, 0.1, color);
 //    }
 
+//    debugInterface->addCircle(unit.position, 0.9, world.PreprocessedDataById[unit.id].InDanger ? debugging::Color(1, 0, 0, 1):debugging::Color(0, 1, 0, 1));
 
     auto order = bestStrategy.GetOrder(world, unit.id, /*forSimulation*/ false);
 

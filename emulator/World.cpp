@@ -75,6 +75,9 @@ void TState::Sync(const TWorld& world) {
 }
 
 TWorld TWorld::FormApi(const model::Game& game) {
+    auto constants = GetGlobalConstants();
+    assert(constants);
+
     TWorld output;
 
     for (const auto& unit: game.units) {
@@ -152,6 +155,21 @@ TWorld TWorld::FormApi(const model::Game& game) {
 
         output.LootById.insert({newLoot.Id, newLoot});
     }
+
+    for (const auto& [_, unit]: output.UnitById) {
+        if (unit.PlayerId != output.MyId) {
+            continue;
+        }
+
+        auto& preprocessedData = output.PreprocessedDataById[unit.Id];
+
+        for (const auto& [projectileId, projectile]: output.ProjectileById) {
+            if (SegmentIntersectsCircle(projectile.Position, projectile.Position + projectile.Velocity * 20, unit.Position, constants->unitRadius)) {
+                preprocessedData.InDanger = true;
+            }
+        }
+    }
+
 
     return output;
 }
