@@ -61,21 +61,17 @@ Vector2D GetPreventiveTargetDirection(const TUnit& unit, const TUnit& enemy) {
     return norm(targetDirection) * angleAdjustmentCos + norm(velocityProjection) * angleAdjustmentSin;
 }
 
-TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) const {
-    const auto& state = world.StateByUnitId.find(unitId)->second;
-
+const TStrategyAction& TStrategy::GetAction(int tickId) const {
     int currentActionId = -1;
     int actionStartTick = StartTick;
-    auto constants = GetGlobalConstants();
-    assert(constants);
 
     for (int i = 0; i < Actions.size(); ++i) {
         auto& action = Actions[i];
 
-        if (actionStartTick > world.CurrentTick) {
+        if (actionStartTick > tickId) {
             break;
         }
-        if (actionStartTick <= world.CurrentTick && world.CurrentTick < actionStartTick + action.ActionDuration) {
+        if (actionStartTick <= tickId && tickId < actionStartTick + action.ActionDuration) {
             currentActionId = i;
             break;
         }
@@ -87,15 +83,72 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
         currentActionId = static_cast<int>(Actions.size()) - 1;
     }
 
-    auto& action = Actions[currentActionId];
+    return Actions[currentActionId];
+}
+
+TOrder TStrategy::GetResGatheringOrder(const TWorld &world, int unitId, bool forSimulation) const {
+    const auto& state = world.StateByUnitId.find(unitId)->second;
+    auto constants = GetGlobalConstants();
+    assert(constants);
+    auto action = GetAction(world.CurrentTick);
+    const auto& unit = world.UnitById.find(unitId)->second;
+    assert(world.StateByUnitId.find(unitId) != world.StateByUnitId.end());
+    const auto& unitState = world.StateByUnitId.find(unitId)->second;
+    bool isRotationStart = (world.CurrentTick - state.LastRotationTick >= constants->ticksPerSecond * 2);
+    bool isRotation = isRotationStart || (world.CurrentTick - state.LastRotationTick < constants->ticksPerSecond * 1);
+    Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
+    auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ state.AutomatonState != ENDING_MODE);
+    auto target = GetTarget(unitId, world, lootId);
+    auto canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
+
+    if (!forSimulation && !canPick) {
+        lootId = GetTargetLoot(world, unitId, false);
+        target = GetTarget(unitId, world, lootId);
+        canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
+    }
+
+    if (canPick) {
+        return {
+            .UnitId = unitId,
+            .TargetVelocity = Vector2D{0, 0},
+            .TargetDirection = isRotation ? rotationDirection:unit.Direction,
+            .Pickup = lootId.has_value(),
+            .LootId = lootId.value_or(0),
+            .IsRotationStart = isRotationStart,
+        };
+    }
+
+
+    auto targetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction;
+
+    return {
+        .UnitId = unitId,
+        .TargetVelocity = action.Speed,
+        .TargetDirection = isRotation ? rotationDirection: targetDirection,
+        .UseShieldPotion = (unit.ShieldPotions > 0),
+        .IsRotationStart = isRotationStart,
+    };
+}
+
+TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) const {
+    const auto& state = world.StateByUnitId.find(unitId)->second;
+
+    if (state.AutomatonState == RES_GATHERING) {
+        return GetResGatheringOrder(world, unitId, forSimulation);
+    }
+
+    auto constants = GetGlobalConstants();
+    assert(constants);
+
+    auto action = GetAction(world.CurrentTick);
 
     const auto& unit = world.UnitById.find(unitId)->second;
 
     assert(world.StateByUnitId.find(unitId) != world.StateByUnitId.end());
     const auto& unitState = world.StateByUnitId.find(unitId)->second;
 
-    bool isRotationStart = (world.CurrentTick - unitState.LastRotationTick >= constants->ticksPerSecond * 2);
-    bool isRotation = isRotationStart || (world.CurrentTick - unitState.LastRotationTick < constants->ticksPerSecond * 1);
+    bool isRotationStart = (world.CurrentTick - state.LastRotationTick >= constants->ticksPerSecond * 2);
+    bool isRotation = isRotationStart || (world.CurrentTick - state.LastRotationTick < constants->ticksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
     auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ state.AutomatonState != ENDING_MODE);
@@ -175,6 +228,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
         .IsRotationStart = isRotationStart,
     };
 }
+
 
 TStrategy TStrategy::Mutate() {
     int mutationIndex = (int)(rand() % Actions.size());
