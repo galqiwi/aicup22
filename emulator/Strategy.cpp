@@ -97,7 +97,7 @@ TOrder TStrategy::GetResGatheringOrder(const TWorld &world, int unitId, bool for
     bool isRotationStart = (world.CurrentTick - state.LastRotationTick >= constants->ticksPerSecond * 2);
     bool isRotation = isRotationStart || (world.CurrentTick - state.LastRotationTick < constants->ticksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
-    auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ state.AutomatonState != ENDING_MODE);
+    auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ true);
     auto target = GetTarget(unitId, world, lootId);
     auto canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
 
@@ -162,7 +162,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     bool isRotation = isRotationStart || (world.CurrentTick - state.LastRotationTick < constants->ticksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
-    auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ state.AutomatonState != ENDING_MODE);
+    auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ true);
     auto target = GetTarget(unitId, world, lootId);
     auto canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
 

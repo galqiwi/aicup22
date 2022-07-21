@@ -39,35 +39,19 @@ bool operator<(TScore a, TScore b) {
     if (b.HealthScore < a.HealthScore) {
         return false;
     }
-    if (a.Mode == ENDING_MODE) {
-        if (a.TargetDistanceScore < b.TargetDistanceScore) {
-            return true;
-        }
-        if (b.TargetDistanceScore < a.TargetDistanceScore) {
-            return false;
-        }
-        if (a.CombatSafetyScore < b.CombatSafetyScore) {
-            return true;
-        }
-        if (b.CombatSafetyScore < a.CombatSafetyScore) {
-            return false;
-        }
-        return false;
-    } else {
-        if (a.CombatSafetyScore < b.CombatSafetyScore) {
-            return true;
-        }
-        if (b.CombatSafetyScore < a.CombatSafetyScore) {
-            return false;
-        }
-        if (a.TargetDistanceScore < b.TargetDistanceScore) {
-            return true;
-        }
-        if (b.TargetDistanceScore < a.TargetDistanceScore) {
-            return false;
-        }
+    if (a.CombatSafetyScore < b.CombatSafetyScore) {
+        return true;
+    }
+    if (b.CombatSafetyScore < a.CombatSafetyScore) {
         return false;
     }
+    if (a.TargetDistanceScore < b.TargetDistanceScore) {
+        return true;
+    }
+    if (b.TargetDistanceScore < a.TargetDistanceScore) {
+        return false;
+    }
+    return false;
 }
 
 double AmmoCoefficient(int ammo) {
@@ -192,7 +176,7 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
 
     score.CombatSafetyScore.value = -combatSafety;
 
-    auto distScore = abs(unit.Position - GetTarget(world, unit.Id, state.AutomatonState != ENDING_MODE));
+    auto distScore = abs(unit.Position - GetTarget(world, unit.Id, true));
     if (distScore < GetGlobalConstants()->unitRadius / 2) {
         distScore -= 10;
     }

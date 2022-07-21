@@ -47,10 +47,6 @@ EAutomatonState updateAutomatonState(EAutomatonState state, const TWorld& world,
         return RES_GATHERING;
     }
 
-    if (world.Zone.currentRadius <= 2 * constants->viewDistance) {
-        return ENDING_MODE;
-    }
-
     if (state == RES_GATHERING) {
         if (unit.Weapon == 2 && unit.Ammo[2] > 0 && unit.Shield > 0) {
             return FIGHT;
