@@ -33,19 +33,6 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId, bool forSimula
     std::optional<double> minDist2 = std::nullopt;
     std::optional<int> output = std::nullopt;
 
-    if (unit.ShieldPotions < constants->maxShieldPotionsInInventory) {
-        for (auto& loot: world.LootByItemIndex.find(ShieldPotions)->second) {
-            if (!LootIsAcceptable(world, unit, loot.Id, forSimulation)) {
-                continue;
-            }
-            auto dist2 = abs2(loot.Position - unit.Position);
-            if (!minDist2 || dist2 < minDist2) {
-                minDist2 = dist2;
-                output = loot.Id;
-            }
-        }
-    }
-
     if (unit.Weapon != 2) {
         for (auto& loot: world.LootByItemIndex.find(Weapon)->second) {
             if (!LootIsAcceptable(world, unit, loot.Id, forSimulation)) {
@@ -59,8 +46,25 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId, bool forSimula
         }
     }
 
+    if (output) {
+        return output;
+    }
+
     if (unit.Ammo[2] < constants->weapons[2].maxInventoryAmmo) {
         for (auto& loot: world.LootByItemIndex.find(Ammo)->second) {
+            if (!LootIsAcceptable(world, unit, loot.Id, forSimulation)) {
+                continue;
+            }
+            auto dist2 = abs2(loot.Position - unit.Position);
+            if (!minDist2 || dist2 < minDist2) {
+                minDist2 = dist2;
+                output = loot.Id;
+            }
+        }
+    }
+
+    if (unit.ShieldPotions < constants->maxShieldPotionsInInventory) {
+        for (auto& loot: world.LootByItemIndex.find(ShieldPotions)->second) {
             if (!LootIsAcceptable(world, unit, loot.Id, forSimulation)) {
                 continue;
             }
