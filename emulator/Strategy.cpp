@@ -107,19 +107,18 @@ TOrder TStrategy::GetResGatheringOrder(const TWorld &world, int unitId, bool for
         canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
     }
 
+    auto targetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction;
+
     if (canPick) {
         return {
             .UnitId = unitId,
-            .TargetVelocity = Vector2D{0, 0},
-            .TargetDirection = isRotation ? rotationDirection:unit.Direction,
+            .TargetVelocity = action.Speed,
+            .TargetDirection = isRotation ? rotationDirection:targetDirection,
             .Pickup = lootId.has_value(),
             .LootId = lootId.value_or(0),
             .IsRotationStart = isRotationStart,
         };
     }
-
-
-    auto targetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction;
 
     return {
         .UnitId = unitId,
@@ -206,11 +205,13 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
         }
     }
 
+    auto targetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction;
+
     if (canPick) {
         return {
             .UnitId = unitId,
-            .TargetVelocity = Vector2D{0, 0},
-            .TargetDirection = isRotation ? rotationDirection:unit.Direction,
+            .TargetVelocity = action.Speed,
+            .TargetDirection = isRotation ? rotationDirection:targetDirection,
             .Pickup = lootId.has_value(),
             .LootId = lootId.value_or(0),
             .IsRotationStart = isRotationStart,
@@ -218,12 +219,11 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     }
 
 
-    auto targetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction;
 
     return {
         .UnitId = unitId,
         .TargetVelocity = action.Speed,
-        .TargetDirection = isRotation ? rotationDirection: targetDirection,
+        .TargetDirection = isRotation ? rotationDirection:targetDirection,
         .UseShieldPotion = (unit.ShieldPotions > 0),
         .IsRotationStart = isRotationStart,
     };

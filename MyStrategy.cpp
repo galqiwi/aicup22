@@ -152,7 +152,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         memory.RememberState(unit.id, newState);
     }
 
-    if (order.Pickup) {
+    if (order.Pickup && unit.aim < 1e-4) {
         memory.ForgetLoot(order.LootId);
     }
 
