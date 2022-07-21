@@ -98,14 +98,19 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     bool isRotation = isRotationStart || (world.CurrentTick - unitState.LastRotationTick < constants->ticksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
-    auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ state.AutomatonState != ENDING_MODE);
-    auto target = GetTarget(unitId, world, lootId);
-    auto canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
+    std::optional<int> lootId = std::nullopt;
+    bool canPick = false;
+
+    lootId = GetTargetLoot(world, unitId, /*excludeDangerous*/ state.AutomatonState != ENDING_MODE);
+    if (lootId) {
+        auto target = world.LootById.find(*lootId)->second.Position;
+        canPick = (abs(target - unit.Position) < constants->unitRadius);
+    }
 
     if (!forSimulation && !canPick) {
-        lootId = GetTargetLoot(world, unitId, false);
-        target = GetTarget(unitId, world, lootId);
-        canPick = lootId && (abs(target - unit.Position) < constants->unitRadius);
+        lootId = GetTargetLoot(world, unitId, true);
+        auto target = world.LootById.find(*lootId)->second.Position;
+        canPick = (abs(target - unit.Position) < constants->unitRadius);
     }
 
     // TODO: support multiple players

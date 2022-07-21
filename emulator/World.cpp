@@ -72,6 +72,8 @@ EAutomatonState updateAutomatonState(EAutomatonState state, const TWorld& world,
 
 void TState::Sync(const TWorld& world) {
     AutomatonState = updateAutomatonState(AutomatonState, world, UnitId);
+    LootId = GetTargetLoot(world, UnitId, /*excludeDangerous*/ true);
+    DangerousLootId = GetTargetLoot(world, UnitId, /*excludeDangerous*/ false);
 }
 
 TWorld TWorld::FormApi(const model::Game& game) {
@@ -420,20 +422,6 @@ void TWorld::UpdateLootIndex() {
     LootByItemIndex[Weapon];
     LootByItemIndex[ShieldPotions];
     LootByItemIndex[Ammo];
-}
-
-void TWorld::UpdateUnitsTargetLoot() {
-    LootIdByUnitId = std::nullopt;
-
-    std::unordered_map<int, std::optional<int>> lootIdByUnitId;
-    for (auto& [unitId, unit]: UnitById) {
-        if (unit.PlayerId != MyId) {
-            continue;
-        }
-        lootIdByUnitId[unitId] = GetTargetLoot(*this, unitId);
-    }
-
-    LootIdByUnitId = std::move(lootIdByUnitId);
 }
 
 double TUnit::GetCombatRadius() const {

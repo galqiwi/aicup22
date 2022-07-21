@@ -6,12 +6,12 @@
 
 namespace Emulator {
 
-bool LootIsAcceptable(const TWorld &world, const TUnit& unit, int lootId, bool forSimulation) {
+bool LootIsAcceptable(const TWorld &world, const TUnit& unit, int lootId, bool excludeDangerous) {
     const auto& loot = world.LootById.find(lootId)->second;
     if (abs(loot.Position - world.Zone.currentCenter) > world.Zone.currentRadius - 4) {
         return false;
     }
-    if (forSimulation) {
+    if (excludeDangerous) {
         if (GetCombatSafety(world, unit, loot.Position) < 0) {
             return false;
         }
@@ -19,12 +19,7 @@ bool LootIsAcceptable(const TWorld &world, const TUnit& unit, int lootId, bool f
     return true;
 }
 
-std::optional<int> GetTargetLoot(const TWorld &world, int unitId, bool forSimulation) {
-    if (forSimulation && world.LootIdByUnitId) {
-        assert((*world.LootIdByUnitId).contains(unitId));
-        return (*world.LootIdByUnitId).find(unitId)->second;
-    }
-    
+std::optional<int> GetTargetLoot(const TWorld &world, int unitId, bool excludeDangerous) {
     static auto constants = GetGlobalConstants();
     assert(constants);
 
@@ -35,7 +30,7 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId, bool forSimula
 
     if (unit.ShieldPotions < constants->maxShieldPotionsInInventory) {
         for (auto& loot: world.LootByItemIndex.find(ShieldPotions)->second) {
-            if (!LootIsAcceptable(world, unit, loot.Id, forSimulation)) {
+            if (!LootIsAcceptable(world, unit, loot.Id, excludeDangerous)) {
                 continue;
             }
             auto dist2 = abs2(loot.Position - unit.Position);
@@ -48,7 +43,7 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId, bool forSimula
 
     if (unit.Weapon != 2) {
         for (auto& loot: world.LootByItemIndex.find(Weapon)->second) {
-            if (!LootIsAcceptable(world, unit, loot.Id, forSimulation)) {
+            if (!LootIsAcceptable(world, unit, loot.Id, excludeDangerous)) {
                 continue;
             }
             auto dist2 = abs2(loot.Position - unit.Position);
@@ -61,7 +56,7 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId, bool forSimula
 
     if (unit.Ammo[2] < constants->weapons[2].maxInventoryAmmo) {
         for (auto& loot: world.LootByItemIndex.find(Ammo)->second) {
-            if (!LootIsAcceptable(world, unit, loot.Id, forSimulation)) {
+            if (!LootIsAcceptable(world, unit, loot.Id, excludeDangerous)) {
                 continue;
             }
             auto dist2 = abs2(loot.Position - unit.Position);
@@ -75,17 +70,17 @@ std::optional<int> GetTargetLoot(const TWorld &world, int unitId, bool forSimula
     return output;
 }
 
-Vector2D GetTarget(int unitId, const TWorld &world, std::optional<int> loot) {
-    if (loot) {
-        return world.LootById.find(*loot)->second.Position;
-    } else {
-        auto angle = world.StateByUnitId.find(unitId)->second.spiralAngle;
-        return world.Zone.nextCenter + Vector2D{cos(angle), sin(angle)} * (0.75 * world.Zone.nextRadius);
-    }
-}
-
-Vector2D GetTarget(const TWorld &world, int unitId, bool forSimulation) {
-    return GetTarget(unitId, world, GetTargetLoot(world, unitId, forSimulation));
-}
+//Vector2D GetTarget(int unitId, const TWorld &world, std::optional<int> loot) {
+//    if (loot) {
+//        return world.LootById.find(*loot)->second.Position;
+//    } else {
+//        auto angle = world.StateByUnitId.find(unitId)->second.spiralAngle;
+//        return world.Zone.nextCenter + Vector2D{cos(angle), sin(angle)} * (0.75 * world.Zone.nextRadius);
+//    }
+//}
+//
+//Vector2D GetTarget(const TWorld &world, int unitId, bool forSimulation) {
+//    return GetTarget(unitId, world, GetTargetLoot(world, unitId, forSimulation));
+//}
 
 }

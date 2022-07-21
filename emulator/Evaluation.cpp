@@ -177,7 +177,16 @@ TScore EvaluateWorld(const TWorld& world, const TUnit& unit) {
         score.CombatSafetyScore.value = std::nullopt;
     }
 
-    auto distScore = abs(unit.Position - GetTarget(world, unit.Id, state.AutomatonState != ENDING_MODE));
+    Vector2D target = {0, 0};
+    auto loot = GetTargetLoot(world, unit.Id, /*excludeDangerous*/ state.AutomatonState != ENDING_MODE);
+    if (loot) {
+        target = world.LootById.find(*loot)->second.Position;
+    } else {
+        auto angle = state.spiralAngle;
+        target = world.Zone.nextCenter + Vector2D{cos(angle), sin(angle)} * (0.75 * world.Zone.nextRadius);
+    }
+
+    auto distScore = abs(unit.Position - target);
     if (distScore < GetGlobalConstants()->unitRadius / 2) {
         distScore -= 10;
     }
@@ -196,7 +205,6 @@ TScore EvaluateStrategy(const TStrategy &strategy, const TWorld& world, int unit
     TScore score = {0, {std::nullopt}, 0};
 
     while (currentWorld.CurrentTick < untilTick) {
-        currentWorld.StateByUnitId[unitId].Sync(currentWorld);
         currentWorld.PrepareEmulation();
         auto order = strategy.GetOrder(currentWorld, unitId);
         currentWorld.EmulateOrder(order);

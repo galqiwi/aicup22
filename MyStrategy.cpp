@@ -63,7 +63,6 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 
     memory.InjectKnowledge(world);
     world.UpdateLootIndex();
-    world.UpdateUnitsTargetLoot();
 
     {
         auto& newState = world.StateByUnitId[unit.id];
@@ -84,13 +83,18 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
         forcedStrategies.push_back(Emulator::GenerateRunaway(direction * -1));
     }
 
-    auto target = Emulator::GetTarget(world, unit.id);
-    if (abs(target - Emulator::Vector2D::FromApi(unit.position)) > 0.05) {
-        forcedStrategies.push_back(Emulator::GenerateRunaway(norm(target - Emulator::Vector2D::FromApi(unit.position))  ));
+    // TODO: add more
+    auto loot = Emulator::GetTargetLoot(world, unit.id, /*excludeDangerous*/ false);
+    if (loot) {
+        auto lootPosition = world.LootById.find(*loot)->second.Position;
+        if (abs(lootPosition - Emulator::Vector2D::FromApi(unit.position)) > 0.05) {
+            forcedStrategies.push_back(Emulator::GenerateRunaway(norm(lootPosition - Emulator::Vector2D::FromApi(unit.position))  ));
+        }
     }
 
+
     auto start = std::chrono::high_resolution_clock::now();
-    int64_t microsecondsToGo = 30000 / constants->teamSize;
+    int64_t microsecondsToGo = 10000 / constants->teamSize;
 
     for (int i = 0;; ++i) {
 //        if (i >= nStrategies + forcedStrategies.size()) {
