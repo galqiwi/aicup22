@@ -61,7 +61,25 @@ Vector2D GetPreventiveTargetDirection(const TUnit& unit, const TUnit& enemy) {
     return norm(targetDirection) * angleAdjustmentCos + norm(velocityProjection) * angleAdjustmentSin;
 }
 
-const TStrategyAction& TStrategy::GetAction(int tickId) const {
+TStrategyAction TStrategy::GetAction(const TWorld& world, int unitId, int tickId) const {
+    auto constants = GetGlobalConstants();
+    assert(constants);
+
+    if (GoTo) {
+        const auto& unit = world.UnitById.find(unitId)->second;
+        if (abs(unit.Position - *GoTo) < constants->unitRadius) {
+            return TStrategyAction{
+                .Speed = Vector2D{0, 0},
+                .ActionDuration = 1,
+            };
+        } else {
+            return TStrategyAction{
+                .Speed = norm(*GoTo - unit.Position) * constants->maxUnitForwardSpeed,
+                .ActionDuration = 1,
+            };
+        }
+    }
+
     int currentActionId = -1;
     int actionStartTick = StartTick;
 
@@ -90,7 +108,7 @@ TOrder TStrategy::GetResGatheringOrder(const TWorld &world, int unitId, bool for
     const auto& state = world.StateByUnitId.find(unitId)->second;
     auto constants = GetGlobalConstants();
     assert(constants);
-    auto action = GetAction(world.CurrentTick);
+    auto action = GetAction(world, unitId, world.CurrentTick);
     const auto& unit = world.UnitById.find(unitId)->second;
     assert(world.StateByUnitId.find(unitId) != world.StateByUnitId.end());
     const auto& unitState = world.StateByUnitId.find(unitId)->second;
@@ -134,7 +152,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     const auto& preprocessedData = world.PreprocessedDataById.find(unitId)->second;
 
     if (ObedienceLevel == HARD) {
-        auto action = GetAction(world.CurrentTick);
+        auto action = GetAction(world, unitId, world.CurrentTick);
         const auto& unit = world.UnitById.find(unitId)->second;
 
         return {
@@ -151,7 +169,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     auto constants = GetGlobalConstants();
     assert(constants);
 
-    auto action = GetAction(world.CurrentTick);
+    auto action = GetAction(world, unitId, world.CurrentTick);
 
     const auto& unit = world.UnitById.find(unitId)->second;
 
@@ -271,8 +289,11 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
 
 
 TStrategy TStrategy::Mutate() {
-    int mutationIndex = (int)(rand() % Actions.size());
     auto output = *this;
+    if (GoTo) {
+        return output;
+    }
+    int mutationIndex = (int)(rand() % Actions.size());
 
     output.Actions[mutationIndex].Speed = output.Actions[mutationIndex].Speed + RandomUniformVector() * GetGlobalConstants()->maxUnitForwardSpeed * 0.2;
     return output;

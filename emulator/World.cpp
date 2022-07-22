@@ -160,7 +160,7 @@ TWorld TWorld::FormApi(const model::Game& game) {
         auto& preprocessedData = output.PreprocessedDataById[unit.Id];
 
         for (const auto& [projectileId, projectile]: output.ProjectileById) {
-            if (SegmentIntersectsCircle(projectile.Position, projectile.Position + projectile.Velocity * 20, unit.Position, constants->unitRadius)) {
+            if (SegmentIntersectsCircle(projectile.Position, projectile.Position + projectile.Velocity * projectile.LifeTime, unit.Position, constants->unitRadius)) {
                 preprocessedData.InDanger = true;
             }
         }

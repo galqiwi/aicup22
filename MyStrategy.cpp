@@ -79,15 +79,22 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     }
 
     for (const auto& [_, projectile]: world.ProjectileById) {
+        if (!SegmentIntersectsCircle(projectile.Position, projectile.Position + projectile.Velocity * projectile.LifeTime, Emulator::Vector2D::FromApi(unit.position), constants->unitRadius)) {
+            continue;
+        }
         auto direction = Emulator::rot90(projectile.Velocity);
         forcedStrategies.push_back(Emulator::GenerateRunaway(direction));
         forcedStrategies.push_back(Emulator::GenerateRunaway(direction * -1));
     }
 
-    auto target = Emulator::GetTarget(world, unit.id);
-    if (abs(target - Emulator::Vector2D::FromApi(unit.position)) > 0.05) {
-        forcedStrategies.push_back(Emulator::GenerateRunaway(norm(target - Emulator::Vector2D::FromApi(unit.position))  ));
-    }
+    forcedStrategies.push_back(Emulator::TStrategy{
+        .GoTo = Emulator::GetTarget(world, unit.id, false),
+    });
+
+    forcedStrategies.push_back(Emulator::TStrategy{
+        .GoTo = Emulator::GetTarget(world, unit.id, true),
+    });
+
 
     static int64_t globalTimeResource = 0;
     int64_t microsecondsToGo = 30000 / constants->teamSize;
@@ -97,10 +104,12 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 
     for (int i = 0;; ++i) {
         if (i >= nStrategies + forcedStrategies.size()) {
+//            std::cerr << i << "\n";
             break;
         }
 
         if (i > forcedStrategies.size() && std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count() > globalTimeResource) {
+//            std::cerr << i << " " << forcedStrategies.size() << "\n";
             break;
         }
 
@@ -168,6 +177,7 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
             }
         }
     }
+
 //    if (bestScore->HealthScore > (constants->unitHealth - unit.health) * nActions * actionDuration + 1e-6) {
 ////        debugInterface->addCircle(unit.position, 0.9, debugging::Color(1, 0, 0, 1));
 //        for (auto strategy: forcedStrategies) {

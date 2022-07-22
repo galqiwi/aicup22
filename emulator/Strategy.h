@@ -4,6 +4,7 @@
 #include "Vector2D.h"
 
 #include <vector>
+#include <optional>
 
 namespace Emulator {
 
@@ -24,10 +25,12 @@ struct TStrategy {
 
     std::vector<TStrategyAction> Actions;
 
+    std::optional<Vector2D> GoTo;
+
     [[nodiscard]] TOrder GetOrder(const TWorld& world, int unitId, bool forSimulation = true) const;
     TStrategy Mutate();
 
-    const TStrategyAction& GetAction(int tickId) const;
+    TStrategyAction GetAction(const TWorld& world, int unitId, int tickId) const;
     TOrder GetResGatheringOrder(const TWorld& world, int unitId, bool forSimulation = true) const;
 
     EObedienceLevel ObedienceLevel{DEFAULT};
