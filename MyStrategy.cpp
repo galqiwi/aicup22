@@ -41,15 +41,15 @@ model::Order MyStrategy::getOrder(const model::Game& game, DebugInterface* debug
     auto output = doGetOrder(game, debugInterface);
     auto finish = std::chrono::high_resolution_clock::now();
 
-    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(finish-globalStart).count() / 1000. << "\t";
-    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() / 1000. << "\n";
+//    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(finish-globalStart).count() / 1000. << "\t";
+//    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() / 1000. << "\n";
 
     return output;
 }
 
 model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterface* debugInterface, const model::Unit& unit) {
     static auto constants = Emulator::GetGlobalConstants();
-    static std::unordered_map<int, std::vector<Emulator::TStrategy>> forcedStrategiesById;
+    static robin_hood::unordered_map<int, std::vector<Emulator::TStrategy>> forcedStrategiesById;
     static Emulator::TMemory memory;
     auto& forcedStrategies = forcedStrategiesById[unit.id];
 
@@ -109,12 +109,12 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 
     for (int i = 0;; ++i) {
         if (i >= nStrategies + forcedStrategies.size()) {
-//            std::cerr << i << "\n";
+            std::cerr << i << "\t" << forcedStrategies.size() << "\n";
             break;
         }
 
         if (i > forcedStrategies.size() && std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start).count() > globalTimeResource) {
-//            std::cerr << i << " " << forcedStrategies.size() << "\n";
+            std::cerr << i << "\t" << forcedStrategies.size() << "\n";
             break;
         }
 

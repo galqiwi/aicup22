@@ -10,7 +10,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 namespace Emulator {
 
 struct TUnit {
@@ -108,14 +107,14 @@ public:
 
     int MyId;
     int CurrentTick;
-    std::unordered_map<int, TUnit> UnitById;
+    robin_hood::unordered_map<int, TUnit> UnitById;
     TZone Zone;
-    std::unordered_map<int, TProjectile> ProjectileById;
-    std::unordered_map<int, TLoot> LootById;
-    std::unordered_map<int, std::vector<TLoot>> LootByItemIndex;
-    std::unordered_map<int, TState> StateByUnitId;
-    std::optional<std::unordered_map<int, std::optional<int>>> LootIdByUnitId;
-    std::unordered_map<int, TPreprocessedData> PreprocessedDataById;
+    robin_hood::unordered_map<int, TProjectile> ProjectileById;
+    robin_hood::unordered_map<int, TLoot> LootById;
+    robin_hood::unordered_map<int, std::vector<TLoot>> LootByItemIndex;
+    robin_hood::unordered_map<int, TState> StateByUnitId;
+    std::optional<robin_hood::unordered_map<int, std::optional<int>>> LootIdByUnitId;
+    robin_hood::unordered_map<int, TPreprocessedData> PreprocessedDataById;
 
     void PrepareEmulation();
     void EmulateOrder(const TOrder& order);

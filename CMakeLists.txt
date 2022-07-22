@@ -71,9 +71,15 @@ set (SRC
     "model/WeaponProperties.cpp"
     "model/Zone.cpp"
         emulator/Evaluation.cpp emulator/Evaluation.h emulator/DebugSingleton.cpp emulator/DebugSingleton.h emulator/LootPicker.cpp emulator/LootPicker.h emulator/Memory.cpp emulator/Memory.h)
+
 SET_SOURCE_FILES_PROPERTIES(${HEADERS} PROPERTIES HEADER_FILE_ONLY TRUE)
 include_directories(".")
 add_executable(ai_cup_22 ${HEADERS} ${SRC} main.cpp emulator/Strategy.cpp emulator/Strategy.h emulator/Vector2D.cpp emulator/Vector2D.h emulator/World.cpp emulator/World.h emulator/Constants.cpp emulator/Constants.h emulator/Sound.cpp emulator/Sound.h)
 TARGET_LINK_LIBRARIES(ai_cup_22 ${PROJECT_LIBS})
 
 add_executable(emulator_test ${SRC} emulator/Strategy.cpp emulator/Strategy.h emulator/Vector2D.cpp emulator/Vector2D.h emulator/World.cpp emulator/World.h emulator/Constants.cpp emulator/Constants.h testbin/emulator_test/main.cpp emulator/Evaluation.cpp emulator/Evaluation.h emulator/DebugSingleton.cpp emulator/DebugSingleton.h emulator/LootPicker.cpp emulator/LootPicker.h emulator/Memory.cpp emulator/Memory.h emulator/Sound.cpp emulator/Sound.h)
+
+include(conanbuildinfo.cmake) # Include Conan-generated file
+conan_basic_setup(TARGETS) # Introduce Conan-generated targets
+
+target_link_libraries(${PROJECT_NAME} CONAN_PKG::robin-hood-hashing)

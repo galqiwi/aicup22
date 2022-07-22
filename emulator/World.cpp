@@ -111,7 +111,7 @@ TWorld TWorld::FormApi(const model::Game& game) {
 
     output.ProjectileById.reserve(game.projectiles.size());
     for (auto& projectile: game.projectiles) {
-        output.ProjectileById.insert({projectile.id, {
+        output.ProjectileById[projectile.id] = {
             .Id = projectile.id,
             .WeaponTypeIndex = projectile.weaponTypeIndex,
             .ShooterId = projectile.shooterId,
@@ -119,7 +119,7 @@ TWorld TWorld::FormApi(const model::Game& game) {
             .Position = Vector2D::FromApi(projectile.position),
             .Velocity = Vector2D::FromApi(projectile.velocity),
             .LifeTime = projectile.lifeTime,
-        }});
+        };
     }
 
     output.LootById.reserve(game.loot.size());
@@ -453,7 +453,7 @@ void TWorld::UpdateLootIndex() {
 void TWorld::UpdateUnitsTargetLoot() {
     LootIdByUnitId = std::nullopt;
 
-    std::unordered_map<int, std::optional<int>> lootIdByUnitId;
+    robin_hood::unordered_map<int, std::optional<int>> lootIdByUnitId;
     for (auto& [unitId, unit]: UnitById) {
         if (unit.PlayerId != MyId) {
             continue;

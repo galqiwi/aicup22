@@ -1,5 +1,6 @@
 #pragma once
 
+#include "public.h"
 #include "Vector2D.h"
 
 #include "model/Constants.hpp"
@@ -44,7 +45,7 @@ private:
     bool Initialized_ = false;
 
     std::vector<TObstacle> Obstacles_;
-    std::unordered_map<std::pair<int, int>, std::vector<int>, hash_pair> Index_;
+    robin_hood::unordered_map<std::pair<int, int>, std::vector<int>, hash_pair> Index_;
     std::vector<int> EmptyList_;
 
     bool SubSegmentIntersectsObstacle(Vector2D p1, Vector2D p2, std::unordered_set<int>& obstacles);
