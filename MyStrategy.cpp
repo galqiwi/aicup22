@@ -151,6 +151,23 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
     assert(bestStrategy);
     assert(bestScore);
 
+
+    // TODO: test this
+    if (bestScore->HealthScore > (constants->unitHealth - unit.health) * nActions * actionDuration + 1e-6) {
+        for (auto strategy: forcedStrategies) {
+            strategy.ObedienceLevel = Emulator::VERY_SOFT;
+            auto score = Emulator::EvaluateStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
+
+            if (score.HealthScore >= bestScore->HealthScore - 1e-6) {
+                continue;
+            }
+
+            if (score < *bestScore) {
+                bestScore = score;
+                bestStrategy = std::move(strategy);
+            }
+        }
+    }
 //    if (bestScore->HealthScore > (constants->unitHealth - unit.health) * nActions * actionDuration + 1e-6) {
 ////        debugInterface->addCircle(unit.position, 0.9, debugging::Color(1, 0, 0, 1));
 //        for (auto strategy: forcedStrategies) {

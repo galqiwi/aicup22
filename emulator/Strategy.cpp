@@ -204,8 +204,21 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
                     shoot = !constants->obstaclesMeta.SegmentIntersectsObstacle(unit.Position, otherUnit.Position);
                 }
 
-                if (shoot && otherUnit.RemainingSpawnTime > 0) {
+                if (otherUnit.RemainingSpawnTime > 0) {
                     shoot = false;
+                }
+
+                for (auto friendId: preprocessedData.Friends) {
+                    if (friendId == unit.Id) {
+                        continue;
+                    }
+
+                    assert(world.UnitById.contains(friendId));
+                    const auto& friendUnit = world.UnitById.find(friendId)->second;
+                    if (SegmentIntersectsCircle(unit.Position, otherUnit.Position, friendUnit.Position, constants->unitRadius)) {
+                        shoot = false;
+                        break;
+                    }
                 }
 
                 auto direction = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second);
@@ -231,6 +244,10 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     }
 
     auto targetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction;
+
+    if (ObedienceLevel != DEFAULT) {
+        isRotation = false;
+    }
 
     if (canPick) {
         return {

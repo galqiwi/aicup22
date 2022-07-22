@@ -164,6 +164,13 @@ TWorld TWorld::FormApi(const model::Game& game) {
                 preprocessedData.InDanger = true;
             }
         }
+
+        for (const auto& [otherUnitId, otherUnit]: output.UnitById) {
+            if (otherUnit.PlayerId != unit.PlayerId) {
+                continue;
+            }
+            preprocessedData.Friends.push_back(otherUnitId);
+        }
     }
 
 
@@ -305,10 +312,17 @@ void TWorld::PrepareEmulation() {
             continue;
         }
 
+        int shooterPlayerId = -1;
+        if (UnitById.contains(projectile.ShooterId)) {
+            shooterPlayerId = UnitById.find(projectile.ShooterId)->second.PlayerId;
+        }
+
         for (auto& [unitId, unit]: UnitById) {
             // TODO: microticks or other stuff
             if (SegmentIntersectsCircle(projectile.Position, projectile.Position + (projectile.Velocity - unit.Velocity) / Constants_->ticksPerSecond, unit.Position, Constants_->unitRadius)) {
-                unit.Health -= Constants_->weapons[projectile.WeaponTypeIndex].projectileDamage;
+                if (unit.PlayerId != shooterPlayerId) {
+                    unit.Health -= Constants_->weapons[projectile.WeaponTypeIndex].projectileDamage;
+                }
                 idsToErase.push_back(projectile.Id);
                 break;
             }

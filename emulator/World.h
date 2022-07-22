@@ -95,6 +95,7 @@ struct TState {
 
 struct TPreprocessedData {
     bool InDanger{false};
+    std::vector<int> Friends;
 };
 
 class TWorld {

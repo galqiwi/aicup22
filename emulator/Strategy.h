@@ -14,8 +14,9 @@ struct TStrategyAction {
 
 enum EObedienceLevel {
     DEFAULT = 0,
-    SOFT = 1,
-    HARD = 2,
+    VERY_SOFT = 1,
+    SOFT = 2,
+    HARD = 3,
 };
 
 struct TStrategy {
