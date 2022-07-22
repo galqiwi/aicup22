@@ -34,7 +34,7 @@ void TState::Update(const TWorld& world, const TOrder& order) {
     if (order.IsRotationStart) {
         LastRotationTick = world.CurrentTick;
     }
-    spiralAngle += (constants->maxUnitForwardSpeed / constants->ticksPerSecond) / (0.75 * world.Zone.nextRadius);
+    spiralAngle += (constants->maxUnitForwardSpeed / constants->realTicksPerSecond) / (0.75 * world.Zone.nextRadius);
 }
 
 EAutomatonState updateAutomatonState(EAutomatonState state, const TWorld& world, int UnitId) {

@@ -104,6 +104,8 @@ TStrategyAction TStrategy::GetAction(const TWorld& world, int unitId, int tickId
     return Actions[currentActionId];
 }
 
+int ROTATION_PERIOD = 2;
+
 TOrder TStrategy::GetResGatheringOrder(const TWorld &world, int unitId, bool forSimulation) const {
     const auto& state = world.StateByUnitId.find(unitId)->second;
     auto constants = GetGlobalConstants();
@@ -112,8 +114,8 @@ TOrder TStrategy::GetResGatheringOrder(const TWorld &world, int unitId, bool for
     const auto& unit = world.UnitById.find(unitId)->second;
     assert(world.StateByUnitId.find(unitId) != world.StateByUnitId.end());
     const auto& unitState = world.StateByUnitId.find(unitId)->second;
-    bool isRotationStart = (world.CurrentTick - state.LastRotationTick >= constants->ticksPerSecond * 2);
-    bool isRotation = isRotationStart || (world.CurrentTick - state.LastRotationTick < constants->ticksPerSecond * 1);
+    bool isRotationStart = (world.CurrentTick - state.LastRotationTick >= constants->realTicksPerSecond * ROTATION_PERIOD);
+    bool isRotation = isRotationStart || (world.CurrentTick - state.LastRotationTick < constants->realTicksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
     auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ true);
     auto target = GetTarget(unitId, world, lootId);
@@ -176,8 +178,8 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     assert(world.StateByUnitId.find(unitId) != world.StateByUnitId.end());
     const auto& unitState = world.StateByUnitId.find(unitId)->second;
 
-    bool isRotationStart = (world.CurrentTick - state.LastRotationTick >= constants->ticksPerSecond * 2);
-    bool isRotation = isRotationStart || (world.CurrentTick - state.LastRotationTick < constants->ticksPerSecond * 1);
+    bool isRotationStart = (world.CurrentTick - state.LastRotationTick >= constants->realTicksPerSecond * ROTATION_PERIOD);
+    bool isRotation = isRotationStart || (world.CurrentTick - state.LastRotationTick < constants->realTicksPerSecond * 1);
     Vector2D rotationDirection = {unit.Direction.y, -unit.Direction.x};
 
     auto lootId = GetTargetLoot(world, unitId, /* forSimulation */ true);
@@ -214,7 +216,7 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
             if (*closestDist2 < actionRadius * actionRadius && unit.Weapon) {
                 bool shoot = world.CurrentTick >= unit.NextShotTick;
 
-                int64_t reloadTicks = lround(ceil(constants->ticksPerSecond / constants->weapons[*unit.Weapon].roundsPerSecond));
+                int64_t reloadTicks = lround(ceil(constants->realTicksPerSecond / constants->weapons[*unit.Weapon].roundsPerSecond));
                 int64_t aimWindow = reloadTicks / 2 + reloadTicks % 2;
                 bool aim = (world.CurrentTick >= unit.NextShotTick - aimWindow);
 

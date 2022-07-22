@@ -14,7 +14,12 @@
 #include "emulator/World.h"
 
 MyStrategy::MyStrategy(const model::Constants& constants) {
-    Emulator::SetGlobalConstants(Emulator::TConstants::FromAPI(constants));
+    auto emulatorConstants = Emulator::TConstants::FromAPI(constants);
+    emulatorConstants.realTicksPerSecond = emulatorConstants.ticksPerSecond;
+    if (emulatorConstants.realTicksPerSecond == 30) {
+        emulatorConstants.ticksPerSecond = 15;
+    }
+    Emulator::SetGlobalConstants(std::move(emulatorConstants));
 }
 
 model::Order MyStrategy::doGetOrder(const model::Game& game, DebugInterface* debugInterface) {

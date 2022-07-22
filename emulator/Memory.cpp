@@ -19,8 +19,8 @@ void TMemory::Update(const TWorld &world) {
             if (world.ProjectileById.contains(id)) {
                 continue;
             }
-            projectile.Position = projectile.Position + projectile.Velocity / constants->ticksPerSecond;
-            projectile.LifeTime -= 1 / constants->ticksPerSecond;
+            projectile.Position = projectile.Position + projectile.Velocity / constants->realTicksPerSecond;
+            projectile.LifeTime -= 1 / constants->realTicksPerSecond;
             if (projectile.LifeTime < 0) {
                 idsToErase.push_back(id);
             }
@@ -33,10 +33,10 @@ void TMemory::Update(const TWorld &world) {
         }
     }
 
-    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 8) == 0) {
+    if (world.CurrentTick % (int)(GetGlobalConstants()->realTicksPerSecond * 8) == 0) {
         LootById.clear();
     }
-    if (world.CurrentTick % (int)(GetGlobalConstants()->ticksPerSecond * 8) == GetGlobalConstants()->ticksPerSecond * 4) {
+    if (world.CurrentTick % (int)(GetGlobalConstants()->realTicksPerSecond * 8) == GetGlobalConstants()->realTicksPerSecond * 4) {
         LootById2.clear();
     }
 
@@ -76,7 +76,7 @@ void TMemory::Update(const TWorld &world) {
         if (world.UnitById.contains(unit.Id)) {
             continue;
         }
-        unit.Position = unit.Position + unit.Velocity / constants->ticksPerSecond;
+        unit.Position = unit.Position + unit.Velocity / constants->realTicksPerSecond;
     }
 
     for (auto& [id, unit]: world.UnitById) {

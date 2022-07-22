@@ -55,6 +55,7 @@ struct TConstants {
     std::vector<TObstacle> obstacles;
     TObstacleMeta obstaclesMeta;
 
+    double realTicksPerSecond;
     // Number of ticks per game second
     double ticksPerSecond;
     // Starting number of units in each team
