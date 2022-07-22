@@ -133,16 +133,16 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
     const auto& state = world.StateByUnitId.find(unitId)->second;
     const auto& preprocessedData = world.PreprocessedDataById.find(unitId)->second;
 
-//    if (preprocessedData.InDanger) {
-//        auto action = GetAction(world.CurrentTick);
-//        const auto& unit = world.UnitById.find(unitId)->second;
-//
-//        return {
-//            .UnitId = unitId,
-//            .TargetVelocity = action.Speed,
-//            .TargetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction,
-//        };
-//    }
+    if (ObedienceLevel == HARD) {
+        auto action = GetAction(world.CurrentTick);
+        const auto& unit = world.UnitById.find(unitId)->second;
+
+        return {
+            .UnitId = unitId,
+            .TargetVelocity = action.Speed,
+            .TargetDirection = abs(action.Speed) > 0.01 ? norm(action.Speed):unit.Direction,
+        };
+    }
 
     if (state.AutomatonState == RES_GATHERING) {
         return GetResGatheringOrder(world, unitId, forSimulation);
@@ -208,14 +208,23 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
                     shoot = false;
                 }
 
+                auto direction = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second);
+
+                if (ObedienceLevel == SOFT) {
+                    auto fov = constants->fieldOfView;
+                    if (unit.Weapon) {
+                        fov -= unit.Aim * (constants->fieldOfView - constants->weapons[*unit.Weapon].aimFieldOfView);
+                    }
+
+                    direction = CropDirection(abs(action.Speed) > 0.01 ? norm(action.Speed):direction, world.UnitById.find(closestUnitId)->second.Position - unit.Position, fov / 180 * M_PI / 2 / 3);
+                }
+
                 return {
                     .UnitId = unitId,
                     .TargetVelocity = action.Speed,
-                    .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second),
+                    .TargetDirection = direction,
                     .Aim = aim,
                     .Shoot = shoot,
-//                    .Pickup = canPick,
-//                    .LootId = lootId.value_or(0),
                 };
             }
         }

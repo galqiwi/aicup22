@@ -149,6 +149,42 @@ model::UnitOrder MyStrategy::getUnitOrder(const model::Game& game, DebugInterfac
 //    debugInterface->addCircle(unit.position, 0.9, world.PreprocessedDataById[unit.id].InDanger ? debugging::Color(1, 0, 0, 1):debugging::Color(0, 1, 0, 1));
 
     assert(bestStrategy);
+    assert(bestScore);
+
+//    if (bestScore->HealthScore > (constants->unitHealth - unit.health) * nActions * actionDuration + 1e-6) {
+////        debugInterface->addCircle(unit.position, 0.9, debugging::Color(1, 0, 0, 1));
+//        for (auto strategy: forcedStrategies) {
+//            strategy.ObedienceLevel = Emulator::SOFT;
+//            auto score = Emulator::EvaluateStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
+//
+//            if (score.HealthScore >= bestScore->HealthScore - 1e-6) {
+//                continue;
+//            }
+//
+//            if (score < *bestScore) {
+//                bestScore = score;
+//                bestStrategy = std::move(strategy);
+//            }
+//        }
+//    }
+
+//    if (bestScore->HealthScore > (constants->unitHealth - unit.health) * nActions * actionDuration + 1e-6) {
+////        debugInterface->addCircle(unit.position, 0.9, debugging::Color(1, 1, 0, 1));
+//        for (auto strategy: forcedStrategies) {
+//            strategy.ObedienceLevel = Emulator::HARD;
+//            auto score = Emulator::EvaluateStrategy(strategy, world, unit.id, world.CurrentTick + nActions * actionDuration);
+//
+//            if (score.HealthScore >= bestScore->HealthScore - 1e-6) {
+//                continue;
+//            }
+//
+//            if (score < *bestScore) {
+//                bestScore = score;
+//                bestStrategy = std::move(strategy);
+//            }
+//        }
+//    }
+
     auto order = bestStrategy->GetOrder(world, unit.id, /*forSimulation*/ false);
 
     {

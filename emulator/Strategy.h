@@ -12,6 +12,12 @@ struct TStrategyAction {
     int ActionDuration;
 };
 
+enum EObedienceLevel {
+    DEFAULT = 0,
+    SOFT = 1,
+    HARD = 2,
+};
+
 struct TStrategy {
     int StartTick;
 
@@ -22,6 +28,8 @@ struct TStrategy {
 
     const TStrategyAction& GetAction(int tickId) const;
     TOrder GetResGatheringOrder(const TWorld& world, int unitId, bool forSimulation = true) const;
+
+    EObedienceLevel ObedienceLevel{DEFAULT};
 };
 
 TStrategy GenerateRandomStrategy(int startTick, int actionDuration, int nActions);

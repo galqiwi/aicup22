@@ -65,4 +65,6 @@ Vector2D RandomUniformVector();
 
 bool SegmentIntersectsCircle(Vector2D p1, Vector2D p2, Vector2D center, double radius);
 
+Vector2D CropDirection(Vector2D direction, Vector2D base, double angle);
+
 }

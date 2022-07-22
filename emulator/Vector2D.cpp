@@ -37,4 +37,17 @@ bool SegmentIntersectsCircle(Vector2D p1, Vector2D p2, Vector2D center, double r
     return (fabs(t % c1) / abs(t) < radius);
 }
 
+Vector2D CropDirection(Vector2D direction, Vector2D base, double angle) {
+    direction = norm(direction);
+    base = norm(base);
+
+    if (direction * base > cos(angle)) {
+        return direction;
+    }
+
+    auto baseT = norm(direction - base * (direction * base));
+
+    return base * cos(angle) + baseT * sin(angle);
+}
+
 }
