@@ -193,13 +193,18 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
             const auto& otherUnit = world.UnitById.find(closestUnitId)->second;
             auto actionRadius = std::max(otherUnit.GetCombatRadius(), unit.GetCombatRadius());
 
-            if (*closestDist2 < actionRadius * actionRadius) {
-                bool shoot = true;
-                if (!forSimulation) {
+            if (*closestDist2 < actionRadius * actionRadius && unit.Weapon) {
+                bool shoot = world.CurrentTick >= unit.NextShotTick;
+
+                int64_t reloadTicks = lround(ceil(constants->ticksPerSecond / constants->weapons[*unit.Weapon].roundsPerSecond));
+                int64_t aimWindow = reloadTicks / 2 + reloadTicks % 2;
+                bool aim = (world.CurrentTick >= unit.NextShotTick - aimWindow);
+
+                if (shoot && !forSimulation) {
                     shoot = !constants->obstaclesMeta.SegmentIntersectsObstacle(unit.Position, otherUnit.Position);
                 }
 
-                if (otherUnit.RemainingSpawnTime > 0) {
+                if (shoot && otherUnit.RemainingSpawnTime > 0) {
                     shoot = false;
                 }
 
@@ -207,10 +212,10 @@ TOrder TStrategy::GetOrder(const TWorld &world, int unitId, bool forSimulation) 
                     .UnitId = unitId,
                     .TargetVelocity = action.Speed,
                     .TargetDirection = GetPreventiveTargetDirection(unit, world.UnitById.find(closestUnitId)->second),
-                    .Aim = true,
+                    .Aim = aim,
                     .Shoot = shoot,
-                    .Pickup = canPick,
-                    .LootId = lootId.value_or(0),
+//                    .Pickup = canPick,
+//                    .LootId = lootId.value_or(0),
                 };
             }
         }
